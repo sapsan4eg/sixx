@@ -1,0 +1,28 @@
+{
+  "name":         "sixx",
+  "description":  "Highly productive framework for PHP 5.5+",
+  "keywords":     ["mvc", "hmvc", "framework"],
+  "homepage":     "https://github.com/sapsan4eg/sixx",
+  "type":         "library",
+  "license":      "MIT",
+  "authors":      [
+    {
+      "name":      "Yuri Nasyrov",
+      "email":     "sapsan4eg@ya.ru"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.0",
+    "swiftmailer/swiftmailer": "@stable"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sixx\\": "src/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "0.8.x-dev"
+    }
+  }
+}
