@@ -47,6 +47,6 @@ abstract class ApplicationObject extends Object
             $entity = '\\MysqlEntity';
         }
 
-        $this->redis = new $entity();
+        $this->entity = new $entity();
     }
 }

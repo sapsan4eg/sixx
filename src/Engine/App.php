@@ -34,16 +34,16 @@ class App extends ApplicationObject
             $map = $this->config->routemap;
 
         if (!empty($this->request->get['_route_'])) {
-            $router = new \Sixx\Router\ReverseRoute($this->request, new $map(), $this->redis->application);
+            $router = new \Sixx\Router\ReverseRoute($this->request, new $map(), $this->entity->application);
         } else
             $router = new \Sixx\Router\ForwardRoute($this->request, new $map());
 
         if ($router->direction() == \Sixx\Router\AbstractRoute::$REVERSE)
-            $this->router = new \Sixx\Router\ReverseLink($router, $this->redis->application);
+            $this->router = new \Sixx\Router\ReverseLink($router, $this->entity->application);
         else
             $this->router = new \Sixx\Router\ForwardLink($router);
 
-        \Sixx\Translate\Mui::start($this->redis->application, $this->request);
+        \Sixx\Translate\Mui::start($this->entity->application, $this->request);
 
         if (! empty($this->config->autorization)) {
             if ($this->config->autorization !== true && class_exists($this->config->autorization))
@@ -51,7 +51,7 @@ class App extends ApplicationObject
             else
                 $aut = '\\Sixx\\Autorization\\Simply';
 
-            $this->autorization = new $aut($this->redis->autorization, $this->router, $this->request);
+            $this->autorization = new $aut($this->entity->autorization, $this->router, $this->request);
 
             if (!$this->autorization->havePermission) {
                 $this->response->setHeaders(['status' => 302, 'Location' => $this->autorization->link]);
@@ -83,7 +83,7 @@ class App extends ApplicationObject
 
         $this->response->setContent($return);
         $this->response->response();
-        $this->redis->analytic->execution_time();
+        $this->entity->analytic->execution_time();
 
         return null;
     }

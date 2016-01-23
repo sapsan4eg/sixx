@@ -106,7 +106,6 @@ class Response {
     /**
      * Response constructor.
      * @param string $protocol
-     * @param \Redis\Analytic|null $analytic
      */
     public function __construct($protocol = 'HTTP/1.1')
     {
