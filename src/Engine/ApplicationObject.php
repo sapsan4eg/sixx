@@ -29,9 +29,9 @@ abstract class ApplicationObject extends Object
     {
         $this->storage = new Storage();
 
-        require_once(__DIR__ . '/../startup.php');
-
         $this->config = new Config($config);
+
+        require_once(__DIR__ . '/../startup.php');
 
         if (! empty($this->config->dir_errors)) {
             \Sixx\Log\Logger::setDir(\Sixx\Load\Loader::slash(DIR_BASE) . $this->config->dir_errors);
@@ -43,9 +43,14 @@ abstract class ApplicationObject extends Object
 
         if (! empty($this->config->entity)) {
             $entity = '\\' . ucfirst($this->config->entity) . 'Entity';
-        } else {
+            if (! class_exists($entity))
+                $entity = null;
+        } elseif (class_exists('\\MysqlEntity')) {
             $entity = '\\MysqlEntity';
         }
+
+        if (empty($entity))
+            throw new \Sixx\Exceptions\NotfoundException('Cannot find entity');
 
         $this->entity = new $entity();
     }
