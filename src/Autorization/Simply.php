@@ -28,8 +28,8 @@ class Simply implements AutorizationInterface
         'email' => null,
         'id' => null
     ];
-    public $havePermission = true;
-    public $link = '';
+    protected $havePermission = true;
+    protected $link = '';
     protected $cookieKey = 'erSDf3410-fX3s:xs]Q/.czk%*a{Vrelz;45a?';
     protected $entity;
     protected $request;
@@ -98,7 +98,7 @@ class Simply implements AutorizationInterface
         }
 
         if($this->havePermission == false) {
-            $this->request->session->data['message'] = array('warning', _t('warning'), _t('error_not_have_perm'));
+            $this->request->session->data['message'] = ['warning', 'warning', 'error_not_have_perm'];
             $came = ['controller' => $this->router->route()['controller'], 'action' => $this->router->route()['action'],];
 
             if(count($this->router->route()['arguments']) > 0)
@@ -233,13 +233,13 @@ class Simply implements AutorizationInterface
         $username = \Sixx\Protection\Protector::clean(strtolower($username));
 
         if (! filter_var($username, FILTER_VALIDATE_EMAIL))
-            return ['answer' => 'error', 'description' => _t('not_valid_email')];
+            return ['answer' => 'error', 'description' => 'not_valid_email'];
 
         if ($this->entity->getUserByName($username))
-            return ['answer' => 'error', 'description' => _t('have_that_user')];
+            return ['answer' => 'error', 'description' => 'have_that_user'];
 
         if (! (bool)$this->entity->addUser($username, $password))
-            return ['answer' => 'error', 'description' => _t('cannot_add_user')];
+            return ['answer' => 'error', 'description' => 'cannot_add_user'];
 
         $token = $this->getToken($username);
 
@@ -253,18 +253,18 @@ class Simply implements AutorizationInterface
      * @param string $token
      * @return array
      */
-    public function enableUser($mail, $token)
+    public function enableUser($username, $token)
     {
-        if(! filter_var($mail, FILTER_VALIDATE_EMAIL))
+        if(! filter_var($username, FILTER_VALIDATE_EMAIL))
             return ['answer' => 'error', 'description' => 'not_valid_email'];
 
-        if(! ($user = $this->entity->getUserByName($mail)))
+        if(! ($user = $this->entity->getUserByName($username)))
             return ['answer' => 'error', 'description' => 'havent_that_user'];
 
         if($user['status'] == 1)
             return ['answer' => 'success', 'description' => 'user_already_enabled'];
 
-        if(! ($token_db = $this->entity->getToken($mail)))
+        if(! ($token_db = $this->entity->getToken($username)))
             return ['answer' => 'error', 'description' => 'havent_token'];
 
         if($token_db != $token)
@@ -273,7 +273,7 @@ class Simply implements AutorizationInterface
         $user['status'] = 1;
 
         $this->entity->upUser($user);
-        $this->entity->delToken($mail);
+        $this->entity->delToken($username);
 
         $this->request->session->data['user'] 	= $user['email'];
         $this->request->session->data['user_id'] = $user['id'];
@@ -292,14 +292,14 @@ class Simply implements AutorizationInterface
      * @param string $mail
      * @return mixed
      */
-    public function getToken($mail)
+    public function getToken($username)
     {
-        if(($user = $this->entity->getUserByName($mail))) {
-            if(($token = $this->entity->getToken($mail)))
+        if(($user = $this->entity->getUserByName($username))) {
+            if(($token = $this->entity->getToken($username)))
                 return $token;
 
             $this->addToken($user);
-            return $this->getToken($mail);
+            return $this->getToken($username);
         }
 
         return false;
@@ -337,11 +337,32 @@ class Simply implements AutorizationInterface
      */
     public function changePassword($userId, $password)
     {
-        if(($user = $this->entity->getUserById($userId))) {
+        if (($user = $this->entity->getUserById($userId))) {
             $user['password'] = md5($password);
             return (bool)$this->entity->upUser($user);
         }
 
         return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function havesPermission()
+    {
+        return $this->havePermission;
+    }
+
+    /**
+     * @return string
+     */
+    public function link()
+    {
+        return $this->link;
+    }
+
+    public function identity()
+    {
+        return $this->identity;
     }
 }

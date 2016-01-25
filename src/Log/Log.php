@@ -80,7 +80,7 @@ class Log extends AbstractLogger
         else
             $dir = \Sixx\Load\Loader::slash(DIR_BASE) . 'logs/';
 
-        $dir .=  str_replace(DIR_BASE, '', str_replace('\\', '/', $path));
+        $dir .= strtolower(str_replace([DIR_BASE, 'vendor/', 'src/'], '', str_replace('\\', '/', $path)));
 
         if (! file_exists($dir) && ! mkdir($dir, 0777, true))
                 return false;

@@ -37,7 +37,7 @@ abstract class AbstractRoute implements RouteInterface
      * @param RouteMapInterface $map
      * @param EntityInterface $entity
      */
-    public function __construct(\Sixx\Net\Request $request, RouteMapInterface $map = null, EntityInterface $entity = null)
+    public function __construct(\Sixx\Net\Request $request, RouteMapInterface $map = null, EntityInterface $entity = null, $direction = null)
     {
         $this->direction = self::$FORWARD;
 
@@ -48,7 +48,7 @@ abstract class AbstractRoute implements RouteInterface
         $this->uri = $request->uri;
         $this->serverPath = $request->serverPath;
 
-        if(! empty($entity))
+        if (! empty($entity))
             $this->entity = $entity;
 
         $this->defaultRoute($this->routes[count($this->routes) - 1]);
@@ -61,7 +61,7 @@ abstract class AbstractRoute implements RouteInterface
 
         $this->setArguments($get);
 
-        if(defined('DIRECTION_LINKS') AND strtolower(DIRECTION_LINKS) == self::$REVERSE)
+        if (! empty($direction) AND strtolower($direction) == self::$REVERSE)
             $this->direction = self::$REVERSE;
     }
 

@@ -95,9 +95,9 @@ class Request
 
         $authorizationHeader = null;
 
-        if ( ! empty($this->server['HTTP_AUTHORIZATION']))
+        if (! empty($this->server['HTTP_AUTHORIZATION']))
             $authorizationHeader = $this->server['HTTP_AUTHORIZATION'];
-        elseif ( ! empty($this->server['REDIRECT_HTTP_AUTHORIZATION']))
+        elseif (! empty($this->server['REDIRECT_HTTP_AUTHORIZATION']))
             $authorizationHeader = $this->server['REDIRECT_HTTP_AUTHORIZATION'];
 
         if ($authorizationHeader === null)

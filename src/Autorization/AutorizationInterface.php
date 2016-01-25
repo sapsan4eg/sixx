@@ -48,13 +48,13 @@ interface AutorizationInterface
      * @param string $token
      * @return array
      */
-    public function enableUser($mail, $token);
+    public function enableUser($username, $token);
 
     /**
      * @param string $mail
      * @return bool|string
      */
-    public function getToken($mail);
+    public function getToken($username);
 
     /**
      * @param int $userId
@@ -62,4 +62,24 @@ interface AutorizationInterface
      * @return bool
      */
     public function changePassword($userId, $password);
+
+    /**
+     * Have user permission for that controller and action
+     * @return bool
+     */
+    public function havesPermission();
+
+    /**
+     * Url string to redirect
+     *
+     * @return string
+     */
+    public function link();
+
+    /**
+     * User identity
+     *
+     * @return array
+     */
+    public function identity();
 }

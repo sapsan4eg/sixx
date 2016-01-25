@@ -12,8 +12,7 @@
     }
   ],
   "require": {
-    "php": ">=5.5.0",
-    "swiftmailer/swiftmailer": "@stable"
+    "php": ">=5.5.0"
   },
   "autoload": {
     "psr-4": {

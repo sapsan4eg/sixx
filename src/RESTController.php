@@ -1,12 +1,12 @@
 <?php
 
-namespace Sixx\Engine;
+namespace Sixx;
 
 /**
- * Sixx\Engine\RESTController
+ * Sixx\RESTController
  *
  * @package    Sixx
- * @subpackage Engine
+ * @subpackage
  * @category   Library
  * @author     Yuri Nasyrov <sapsan4eg@ya.ru>
  * @copyright  Copyright (c) 2014 - 2015, Yuri Nasyrov.
@@ -14,13 +14,8 @@ namespace Sixx\Engine;
  * @link       http://six-x.org
  * @since      Version 1.0.0.0
  */
-class RESTController extends Object
+class RESTController extends Controller
 {
-
-    protected $actions         = [];
-    protected $action          = '';
-    protected $defaultUsername = 'username';
-    protected $defaultPwd      = 'password';
     protected $variables       = [];
     protected $userId          = 0;
 
@@ -29,7 +24,7 @@ class RESTController extends Object
      */
     protected function afterConstruct()
     {
-        $this->view = new View([
+        $this->view = new Engine\View([
             'ControllerName' => $this->router->route['controller'],
             'ActionName'     => $this->router->route['action'],
             'RequestedUrl'   => $this->request->url,
@@ -37,21 +32,66 @@ class RESTController extends Object
             'response'       => $this->response,
         ]);
 
-        $this->action = $this->router->route['action'];
-
-        if (! $this->legitimated()) {
+        if (! $this->legitimated($this->permissions($this->router->route['controller'], $this->router->route['action']))) {
             $this->response->response();
             exit;
         }
     }
 
     /**
+     * @param string $controller
+     * @param string $action
+     * @return array
+     */
+    protected function permissions($controller, $action)
+    {
+        $doc = new \ReflectionClass($controller . 'Controller');
+        $action = $this->getParams($doc->getMethod($action)->getDocComment());
+        $controller = $this->getParams($doc->getDocComment());
+        return array_merge($controller, $action);
+    }
+
+    /**
+     * @param string $string
+     * @return array
+     */
+    protected function getParams($string = '')
+    {
+        $string = str_replace(['/**', '*/'], '', str_replace("\t", ' ', $string));
+        $params = explode('*', $string);
+        $array = [];
+
+        foreach ($params as $param) {
+            $param = trim($param);
+
+            while (strpos($param, '  ') !== false) {
+                $param = str_replace('  ', ' ', $param);
+            }
+
+            if (! empty($param) && strpos($param, '@') !== false) {
+                $key = substr($param, 0, strpos($param, ' '));
+                $value = substr($param, strpos($param, ' ') + 1);
+
+                if (in_array($key, ['@methods', '@autorization', '@autorizationType', '@variables'])
+                    && ! empty(trim($value))
+                )
+                    $array[substr($key, 1)] = trim($value);
+            }
+        }
+
+        return $array;
+    }
+
+    /**
      * check is legitimate request
-     *
+     * @param array $array
      * @return  bool
      */
-    protected function legitimated()
+    protected function legitimated($array = [])
     {
+        #if (! empty($array['autorization']) && empty($array['autorizationType']))
+            $array['autorizationType'] = 'basic';
+
         if (! empty($this->request->headers['PHP_AUTH_USER']) && ! empty($this->request->headers['PHP_AUTH_PW'])
             && $this->haveUser($this->request->headers['PHP_AUTH_USER'], $this->request->headers['PHP_AUTH_PW'])
         ) {
@@ -61,8 +101,8 @@ class RESTController extends Object
         if (empty($this->response->getContent()))
             $this->response->setContent($this->view->JsonResult([
                 'code'    => 401,
-                'error'   => 'You don\'t send basic authorization values.',
-                'message' => 'You don\'t send basic authorization values.',
+                'error'   => 'You don\'t send authorization values.',
+                'message' => 'You don\'t send authorization values.',
             ]));
 
         $this->response->setHeaders(['status' => 401]);

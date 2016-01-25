@@ -98,36 +98,36 @@ final class View
      * @param string $actionName
      * @param string
      * @param string|bool $layout
-     * @throws \Exception
+     * @throws \Sixx\Exceptions\NotfoundException
      * @return string
      */
     public function ViewResult($actionName = '', $controllerName = '', $layout = true)
     {
-        if(strlen($actionName) == 0)
+        if (empty($actionName))
             $actionName = $this->privateData['ActionName'];
 
-        if(strlen($controllerName) == 0)
+        if (empty($controllerName))
             $controllerName = $this->privateData['ControllerName'];
 
-        $expansion = defined('FILE_VIEW') ? FILE_VIEW : 'tpl';
+        $expansion = ! empty($this->config->file_view) ? $this->config->file_view : 'tpl';
 
         $dir = \Sixx\Load\Loader::slash(DIR_BASE);
 
-        $dir .= \Sixx\Load\Loader::slash(! empty($this->config->dir_views) ? $this->config->dir_views : '');
+        $dir .= \Sixx\Load\Loader::slash(! empty($this->config->dir_views) ? $this->config->dir_views : 'view');
 
         $file = strtolower($dir . $controllerName . '/' . $actionName . '.' . $expansion);
 
-        if($layout != false) {
+        if ($layout != false) {
 
             if(is_string($layout) && strlen($layout) > 0)
                 $layoutFile = $layout;
             else
                 $layoutFile = ! empty($this->config->file_layout) ? $this->config->file_layout : 'layout';
 
-            $dir .= \Sixx\Load\Loader::slash(! empty($this->config->dir_shared) ? $this->config->dir_shared : '');
+            $dir .= \Sixx\Load\Loader::slash(! empty($this->config->dir_shared) ? $this->config->dir_shared : 'shared');
 
             $file = strtolower($dir . $layoutFile . '.' . $expansion);
-            $this->privateData['RenderBody'] = $this->ViewResult($actionName, $controllerName, false);
+            $this->renderBody = $this->ViewResult($actionName, $controllerName, false);
         }
 
         if (file_exists($file)) {
@@ -138,7 +138,7 @@ final class View
             ob_end_clean();
             return $content;
         } else {
-            throw new \Exception('Error: Could not load view ' . $file . '!');
+            throw new \Sixx\Exceptions\NotfoundException('Error: Could not find view ' . $file . '!');
         }
     }
 
@@ -253,7 +253,7 @@ final class View
     {
         $this->response->setHeaders(['Content-Type' => 'application/json']);
 
-        if(is_string($array))
+        if (is_string($array))
             return $array;
 
         return json_encode($array);

@@ -22,6 +22,7 @@ class Mui
     protected static $name;
     protected static $listLanguages = [];
     protected static $entity;
+    protected static $started = false;
 
     /**
      * initiation
@@ -35,13 +36,14 @@ class Mui
      */
     public static function start(EntityInterface $entity, \Sixx\Net\Request $request)
     {
+        require_once(\Sixx\Load\Loader::slash(__DIR__) . 'translate.php');
         self::$entity = $entity;
         self::$default = defined('DEFAULT_LANGUAGE') ? DEFAULT_LANGUAGE: self::$default;
         self::$lang = self::$default;
         self::$name = 'no name';
         self::setLanguages(self::$entity->listLanguages());
 
-        if(count(self::listLanguages()) > 1) {
+        if (count(self::listLanguages()) > 1) {
             $array = [
                 isset($request->get['my_mui_language']) ? $request->get['my_mui_language'] : false,
                 isset($request->post['my_mui_language']) ? $request->post['my_mui_language'] : false,
@@ -51,7 +53,7 @@ class Mui
 
             $check_browser = true;
 
-            foreach($array as $value) {
+            foreach ($array as $value) {
                 if ($value != false && array_key_exists($value, self::listLanguages())) {
                     self::$name	= self::listLanguages()[$value]['name'];
                     self::$lang	= $value;
@@ -60,7 +62,7 @@ class Mui
                 }
             }
 
-            if($check_browser && ! empty($server['HTTP_ACCEPT_LANGUAGE'])) {
+            if ($check_browser && ! empty($server['HTTP_ACCEPT_LANGUAGE'])) {
                 $browser_languages = explode(',', $server['HTTP_ACCEPT_LANGUAGE']);
 
                 foreach ($browser_languages As $browser_language) {
@@ -71,7 +73,7 @@ class Mui
                     }
                 }
             }
-        } else if (count(self::listLanguages()) == 1) {
+        } elseif (count(self::listLanguages()) == 1) {
             self::$name = self::listLanguages()[0]['name'];
             self::$lang = self::listLanguages()[0]['lang'];
         }
@@ -88,6 +90,7 @@ class Mui
             setcookie('language', self::$lang, time() + 60 * 60 * 24 * 30, '/', $request->server['HTTP_HOST']);
         }
 
+        self::$started = true;
     }
 
     /**
@@ -99,9 +102,12 @@ class Mui
      */
     public static function get($key)
     {
-        if(empty(self::$dictionary[$key])) {
+        if(! self::$started)
+            throw new \Exception('Class translate didn\'t started. ');
+
+        if (empty(self::$dictionary[$key])) {
             self::$dictionary[$key] = self::translate($key, self::$lang);
-            if(self::$dictionary[$key] === $key && self::$lang != self::$default)
+            if (self::$dictionary[$key] === $key && self::$lang != self::$default)
                 self::$dictionary[$key] = self::translate($key, self::$default);
         }
         return self::$dictionary[$key];
@@ -117,7 +123,7 @@ class Mui
      */
     private static function translate($key, $locale)
     {
-        if(($label = self::$entity->translate($key, $locale)))
+        if (($label = self::$entity->translate($key, $locale)))
             return $label;
         else
             return $key;

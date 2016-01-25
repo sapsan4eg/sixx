@@ -91,13 +91,13 @@ class ReverseRoute extends AbstractRoute
 
         $array['count'] = count($map);
 
-        foreach($map as $key => $value) {
+        foreach ($map as $key => $value) {
 
-            if(isset($dirty[$key]) && strpos($value, '{') !== false && strpos($value, '}') !== false) {
+            if (isset($dirty[$key]) && strpos($value, '{') !== false && strpos($value, '}') !== false) {
 
                 $name = StringWorking::getName($value);
 
-                if($name == 'controller' || $name == 'action') {
+                if ($name == 'controller' || $name == 'action') {
                     $array[$name] = StringWorking::clearRoute($value, $dirty[$key]);
                 } else {
                     $array['arguments'][$name] = StringWorking::clearRoute($value, $dirty[$key]);
@@ -105,10 +105,10 @@ class ReverseRoute extends AbstractRoute
             }
         }
 
-        if(strpos($url, '{personal_route}') !== false) {
+        if (strpos($url, '{personal_route}') !== false && ! empty($this->entity)) {
             $try_again = false;
 
-            if(($personal = $this->entity->getRoute($array['arguments']['personal_route']))) {
+            if (($personal = $this->entity->getRoute($array['arguments']['personal_route']))) {
 
                 $array['controller'] = $personal['controller'];
                 $array['action'] = $personal['action'];
@@ -121,7 +121,7 @@ class ReverseRoute extends AbstractRoute
                 $try_again = true;
             }
 
-            if($try_again) {
+            if ($try_again) {
                 array_splice($this->routes, $num, 1);
                 $num = $this->getNumRoute($dirty);
                 $array = $array = $this->routeValues($this->routes[$num]['url'], $dirty, $num);

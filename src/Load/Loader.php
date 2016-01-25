@@ -16,7 +16,7 @@ namespace Sixx\Load;
  */
 class Loader
 {
-    protected static $listDir;
+    protected static $listDir = [];
     /**
      * @param $name
      * @param $dir

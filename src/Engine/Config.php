@@ -28,17 +28,22 @@ class Config
             $content = explode(PHP_EOL, $content);
             $array = ['dir_views', 'dir_errors', 'dir_shared', 'dir_email_views'];
 
+            $dirs = [];
+
             foreach ($content as $value) {
                 if (strpos($value, '=') > 0) {
                     $name = strtolower(trim(substr($value, 0 , strpos($value, '='))));
                     $val = trim(substr($value, strpos($value, '=') + 1));
 
                     if (strpos($name, 'dir_') === 0 && ! in_array($name, $array)) {
-                         $this->dirs[] = \Sixx\Load\Loader::slash(\Sixx\Load\Loader::slash(DIR_BASE) . $val);
+                         $dirs[] = \Sixx\Load\Loader::slash(\Sixx\Load\Loader::slash(DIR_BASE) . $val);
                     } else
                         $this->$name = $val;
                 }
             }
+
+            #if(count($dirs) > 0)
+                $this->dirs = $dirs;
 
             if (empty($this->dir_view))
                 $this->dir_view = \Sixx\Load\Loader::slash(DIR_BASE) . 'views';
@@ -49,5 +54,13 @@ class Config
         } else {
             throw new NotfoundException('Cannot find config file: ' . $file);
         }
+    }
+
+    public function __get($name)
+    {
+        if (! isset($this->$name))
+            return null;
+        else
+            return $this->$name;
     }
 }

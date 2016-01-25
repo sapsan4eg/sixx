@@ -14,7 +14,8 @@ namespace Sixx\Net;
  * @link       http://six-x.org
  * @since      Version 1.0.0.0
  */
-class Response {
+class Response
+{
 
     /**
      * Status codes translation table.
@@ -132,8 +133,8 @@ class Response {
         $headers = $this->prepare($this->headers);
         header($this->protocol . ' ' . $headers['status'] . ' ' . $this->status[$headers['status']], true, $headers['status']);
 
-        foreach($headers as $name => $value) {
-            if($name == 'status')
+        foreach ($headers as $name => $value) {
+            if ($name == 'status')
                 continue;
             header($name.': '.$value, false, $headers['status']);
         }
@@ -148,15 +149,15 @@ class Response {
         $headers['status'] = ! empty($headers['status']) ? (int)$headers['status'] : 200;
         $headers['status'] = array_key_exists((int)$headers['status'], $this->status) ? (int)$headers['status'] : 200;
 
-        if(empty($headers['Date'])) {
+        if (empty($headers['Date'])) {
             $date = new \DateTime('now', new \DateTimeZone('UTC'));
             $headers['Date'] = $date->format('D, d M Y H:i:s').' GMT';
         }
 
-        if(empty($headers['Content-Type']))
+        if (empty($headers['Content-Type']))
             $headers['Content-Type'] = 'text/html; charset=UTF-8';
 
-        if ( ! empty($headers['Transfer-Encoding']) && ! empty($headers['Content-Length']))
+        if (! empty($headers['Transfer-Encoding']) && ! empty($headers['Content-Length']))
             unset($headers['Content-Length']);
 
         return $headers;
@@ -165,9 +166,9 @@ class Response {
     /**
      * @param string $content
      */
-    public function setContent($content)
+    public function setContent($content = '')
     {
-        if( ! empty($content))
+        if (! empty($content))
             $this->content = $content;
     }
 
@@ -184,8 +185,8 @@ class Response {
      */
     public function setHeaders(array $header)
     {
-        if(is_array($header)) {
-            foreach($header As $name => $value) {
+        if (is_array($header)) {
+            foreach ($header as $name => $value) {
                 $this->headers[$name] = $value;
             }
         }

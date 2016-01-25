@@ -33,12 +33,15 @@ class Model extends Object
            $name  = '\\' . $name;
 
         if (! class_exists($name))
-            throw new \Exception('Class ' . $name . ' cannot be found in this project.');
+            throw new \Sixx\Exceptions\NotfoundException('Class ' . $name . ' cannot be found in this project.');
 
         if (get_parent_class($name) == 'Sixx\Engine\Object')
             array_unshift($arguments, $this->storage);
 
         $refClass = new \ReflectionClass($name);
         $this->$alternativeName = $refClass->newInstanceArgs($arguments);
+
+        if (! $this->$alternativeName instanceof \Sixx\Model)
+            throw new \Sixx\Exceptions\NotInstanceOfException('Class ' . $name . ' must be instance of \\Sixx\\Model');
     }
 }

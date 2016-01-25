@@ -157,15 +157,3 @@ spl_autoload_register(
         \Sixx\Load\Loader::autoload($name);
     }
 );
-
-/**
- * Translate label
- *
- * @param $label
- * @return string
- */
-function _t($label)
-{
-    return \Sixx\Translate\Mui::get($label);
-}
-
