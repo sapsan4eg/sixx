@@ -111,9 +111,9 @@ final class View
 
         $expansion = ! empty($this->config->file_view) ? $this->config->file_view : 'tpl';
 
-        $dir = \Sixx\Load\Loader::slash(DIR_BASE);
+        $dir = \Sixx\Load\Loader::slash($this->config->dir_base);
 
-        $dir .= \Sixx\Load\Loader::slash(! empty($this->config->dir_views) ? $this->config->dir_views : 'view');
+        $dir .= \Sixx\Load\Loader::slash(! empty($this->config->dir_views) ? $this->config->dir_views : 'views');
 
         $file = strtolower($dir . $controllerName . '/' . $actionName . '.' . $expansion);
 

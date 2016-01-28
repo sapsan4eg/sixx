@@ -22,13 +22,13 @@ abstract class ApplicationObject extends Object
     /**
      * Constructor
      */
-    public function __construct($config = '')
+    public function __construct($config = null)
     {
         $this->setUp($config);
         $this->afterConstruct();
     }
 
-    protected function setUp($config = '')
+    protected function setUp($config)
     {
         $this->storage = new Storage();
 
@@ -36,13 +36,13 @@ abstract class ApplicationObject extends Object
 
         require_once(\Sixx\Load\Loader::slash(__DIR__) . '../startup.php');
 
+        \Sixx\Load\Loader::setDir($this->config->dir_base);
+
         if (! empty($this->config->dir_errors)) {
-            \Sixx\Log\Logger::setDir(\Sixx\Load\Loader::slash(DIR_BASE) . $this->config->dir_errors);
+            \Sixx\Log\Logger::setDir(\Sixx\Load\Loader::slash($this->config->dir_base) . $this->config->dir_errors);
         }
 
-        if (! empty($this->config->dirs)) {
-            \Sixx\Load\Loader::setDirs($this->config->dirs);
-        }
+        \Sixx\Load\Loader::setControllerDir($this->config->dir_controller);
 
         if (! empty($this->config->entity)) {
             $entity = '\\' . ucfirst($this->config->entity) . 'Entity';

@@ -17,6 +17,9 @@ namespace Sixx\Load;
 class Loader
 {
     protected static $listDir = [];
+    protected static $controllerDir;
+    protected static $dirBase;
+
     /**
      * @param $name
      * @param $dir
@@ -39,40 +42,40 @@ class Loader
         if (strpos($name, '/') === 0)
             $name = substr($name, 1);
 
-        foreach (self::$listDir as $dir) {
-            $file = $dir . $name . '.php';
+        if (strripos($name, 'controller') == strlen($name) - 10) {
+            if (file_exists(self::$controllerDir . $name . '.php'))
+            return require_once(self::$controllerDir . $name . '.php');
+        }
 
-            if (file_exists($file)) {
-                require_once($file);
-                break;
-            } elseif (file_exists(($file = $dir . $name . '.php'))) {
-                require_once($file);
-                break;
-            }
+        if(empty(self::$dirBase))
+            return;
+
+        if (file_exists(self::$dirBase . $name . '.php')) {
+            require_once(self::$dirBase . $name . '.php');
         }
     }
 
-    public static function setDirs($dirs)
+    public static function setDir($dir = '')
     {
-        if (is_string($dirs))
-            self::setDir($dirs);
-        else if(is_array($dirs)) {
-            foreach($dirs as $dir) {
-                self::setDir($dir);
-            }
-        }
+        if (! empty($dir) && file_exists($dir))
+            self::$dirBase = $dir;
     }
 
-    protected static function setDir($dir)
+    public static function getDir()
     {
-        self::$listDir[] = $dir;
+        return self::$dirBase;
     }
 
     public static function slash($string = '')
     {
-        if(strrpos($string, '/') != strlen($string))
+        if(strrpos($string, '/') != strlen($string) -1)
             $string .= '/';
 
         return $string;
+    }
+
+    public static function setControllerDir($dir = '')
+    {
+        self::$controllerDir = $dir;
     }
 }

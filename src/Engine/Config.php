@@ -17,43 +17,25 @@ use Sixx\Exceptions\NotfoundException;
  */
 class Config
 {
-    public function __construct($file = '')
+    public function __construct($config)
     {
-        if (! defined('DIR_BASE'))
-            throw new NotfoundException('Dir base not declarated, use define DIR_BASE to declarate');
-
-        if (file_exists($file)) {
-
-            $content = file_get_contents($file);
-            $content = explode(PHP_EOL, $content);
-            $array = ['dir_views', 'dir_errors', 'dir_shared', 'dir_email_views'];
-
-            $dirs = [];
-
-            foreach ($content as $value) {
-                if (strpos($value, '=') > 0) {
-                    $name = strtolower(trim(substr($value, 0 , strpos($value, '='))));
-                    $val = trim(substr($value, strpos($value, '=') + 1));
-
-                    if (strpos($name, 'dir_') === 0 && ! in_array($name, $array)) {
-                         $dirs[] = \Sixx\Load\Loader::slash(\Sixx\Load\Loader::slash(DIR_BASE) . $val);
-                    } else
-                        $this->$name = $val;
-                }
-            }
-
-            #if(count($dirs) > 0)
-                $this->dirs = $dirs;
-
-            if (empty($this->dir_view))
-                $this->dir_view = \Sixx\Load\Loader::slash(DIR_BASE) . 'views';
-
-            if (empty($this->dir_shared))
-                $this->dir_shared = 'shared';
-
-        } else {
-            throw new NotfoundException('Cannot find config file: ' . $file);
+        if (defined('DIR_BASE')) {
+            $this->dir_base = DIR_BASE;
         }
+
+        if (is_string($config))
+            $this->fillByFile($config);
+        elseif (is_array($config))
+            $this->fillByArray($config);
+
+        if (empty($this->dir_base) || ! file_exists($this->dir_base))
+            throw new NotfoundException('Cannot find your base dir, please add real basedir like dir_base=/var/www/yourproject/ in your configuration file.');
+
+        if (empty($this->dir_controller))
+            $this->dir_controller = \Sixx\Load\Loader::slash(\Sixx\Load\Loader::slash($this->dir_base) . 'controller');
+
+        if (empty($this->dir_shared))
+            $this->dir_shared = 'shared';
     }
 
     public function __get($name)
@@ -62,5 +44,30 @@ class Config
             return null;
         else
             return $this->$name;
+    }
+
+    protected function fillByFile($string)
+    {
+        if (file_exists($string)) {
+            $content = explode(PHP_EOL, file_get_contents($string));
+
+            foreach ($content as $value) {
+                if (strpos($value, '=') > 0) {
+                    $value = str_replace(['"', "'"], '', $value);
+                    $name = strtolower(trim(substr($value, 0 , strpos($value, '='))));
+                    $this->$name = trim(substr($value, strpos($value, '=') + 1));
+                }
+            }
+        }
+    }
+
+    protected function fillByArray($array)
+    {
+        foreach ($array as $key => $value) {
+            if (! is_numeric($key)) {
+                $key = strtolower(trim($key));
+                $this->$key = $value;
+            }
+        }
     }
 }

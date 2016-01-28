@@ -83,7 +83,7 @@ function errorHandler($errno, $message, $file, $line)
             break;
     }
 
-    $program = str_replace(DIR_BASE, '', dirname($file));
+    $program = str_replace(\Sixx\Load\Loader::getDir(), '', dirname($file));
 
     Log\Logger::$error($message . ' File: ' . $file . ' Line: ' . $line, ['PROGRAM' => $program]);
     writeError($error, $message . ' File: ' . $file . ' Line: ' . $line);
