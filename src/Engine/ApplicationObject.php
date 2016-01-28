@@ -42,7 +42,7 @@ abstract class ApplicationObject extends Object
             \Sixx\Log\Logger::setDir(\Sixx\Load\Loader::slash($this->config->dir_base) . $this->config->dir_errors);
         }
 
-        \Sixx\Load\Loader::setControllerDir($this->config->dir_controller);
+        \Sixx\Load\Loader::setControllerDir($this->config->dir_controllers);
 
         if (! empty($this->config->entity)) {
             $entity = '\\' . ucfirst($this->config->entity) . 'Entity';

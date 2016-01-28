@@ -1,6 +1,7 @@
 <?php
 
 namespace Sixx\Engine;
+
 use Sixx\Exceptions\NotfoundException;
 
 /**
@@ -31,8 +32,10 @@ class Config
         if (empty($this->dir_base) || ! file_exists($this->dir_base))
             throw new NotfoundException('Cannot find your base dir, please add real basedir like dir_base=/var/www/yourproject/ in your configuration file.');
 
-        if (empty($this->dir_controller))
-            $this->dir_controller = \Sixx\Load\Loader::slash(\Sixx\Load\Loader::slash($this->dir_base) . 'controller');
+        if (empty($this->dir_controllers))
+            $this->dir_controllers = \Sixx\Load\Loader::slash(\Sixx\Load\Loader::slash($this->dir_base) . 'controllers');
+        else
+            $this->dir_controllers = \Sixx\Load\Loader::slash(\Sixx\Load\Loader::slash($this->dir_base) . $this->dir_controllers);
 
         if (empty($this->dir_shared))
             $this->dir_shared = 'shared';

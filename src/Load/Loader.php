@@ -44,10 +44,11 @@ class Loader
 
         if (strripos($name, 'controller') == strlen($name) - 10) {
             if (file_exists(self::$controllerDir . $name . '.php'))
-            return require_once(self::$controllerDir . $name . '.php');
+               require_once(self::$controllerDir . $name . '.php');
+            return;
         }
 
-        if(empty(self::$dirBase))
+        if (empty(self::$dirBase))
             return;
 
         if (file_exists(self::$dirBase . $name . '.php')) {
@@ -76,6 +77,6 @@ class Loader
 
     public static function setControllerDir($dir = '')
     {
-        self::$controllerDir = $dir;
+        self::$controllerDir = self::slash($dir);
     }
 }
