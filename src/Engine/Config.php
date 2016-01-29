@@ -11,25 +11,28 @@ use Sixx\Exceptions\NotfoundException;
  * @subpackage Engine
  * @category   Library
  * @author     Yuri Nasyrov <sapsan4eg@ya.ru>
- * @copyright  Copyright (c) 2014 - 2015, Yuri Nasyrov.
+ * @copyright  Copyright (c) 2014 - 2016, Yuri Nasyrov.
  * @license	   http://six-x.org/guide/license.html
  * @link       http://six-x.org
  * @since      Version 1.0.0.0
  */
 class Config
 {
+    /**
+     * Config constructor.
+     * @param string|array $config
+     */
     public function __construct($config)
     {
-        if (defined('DIR_BASE')) {
+        if (defined('DIR_BASE'))
             $this->dir_base = DIR_BASE;
-        }
 
         if (is_string($config))
             $this->fillByFile($config);
         elseif (is_array($config))
             $this->fillByArray($config);
 
-        if (empty($this->dir_base) || ! file_exists($this->dir_base))
+        if (empty($this->dir_base) || ! file_exists($this->dir_base) || ! is_dir($this->dir_base))
             throw new NotfoundException('Cannot find your base dir, please add real basedir like dir_base=/var/www/yourproject/ in your configuration file.');
 
         if (empty($this->dir_controllers))
@@ -41,6 +44,10 @@ class Config
             $this->dir_shared = 'shared';
     }
 
+    /**
+     * @param string $name
+     * @return null|object
+     */
     public function __get($name)
     {
         if (! isset($this->$name))
@@ -49,6 +56,9 @@ class Config
             return $this->$name;
     }
 
+    /**
+     * @param string $string
+     */
     protected function fillByFile($string)
     {
         if (file_exists($string)) {
@@ -64,7 +74,10 @@ class Config
         }
     }
 
-    protected function fillByArray($array)
+    /**
+     * @param array $array
+     */
+    protected function fillByArray(array $array)
     {
         foreach ($array as $key => $value) {
             if (! is_numeric($key)) {
