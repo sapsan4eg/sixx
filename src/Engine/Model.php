@@ -27,7 +27,7 @@ class Model extends Object
         $name = str_replace('/', '\\', $name);
 
         if ($alternativeName === false )
-            $alternativeName = str_replace(['\\', '/'], '', $name ) . 'Model';
+            $alternativeName = str_replace(['\\', '/'], '', $name );
 
         if (strpos($name,'\\') !== 0)
            $name  = '\\' . $name;
