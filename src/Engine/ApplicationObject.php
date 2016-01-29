@@ -48,11 +48,11 @@ abstract class ApplicationObject extends Object
             $entity = '\\' . ucfirst($this->config->entity) . 'Entity';
             if (! class_exists($entity))
                 throw new \Sixx\Exceptions\NotfoundException('Cannot find entity');
-        } elseif (class_exists('\\MysqlEntity')) {
-            $entity = '\\MysqlEntity';
+        } elseif (class_exists('\Entity\MysqlEntity')) {
+            $entity = '\Entity\MysqlEntity';
         }
 
-        if (! empty($entity)) { #
+        if (! empty($entity)) {
             $this->entity = new $entity();
             if (! $this->entity instanceof \Sixx\Entity)
                 throw new \Sixx\Exceptions\NotInstanceOfException('Entity must be instance of Sixx\\Entity');
