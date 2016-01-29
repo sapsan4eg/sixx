@@ -33,7 +33,7 @@ class App extends Engine\ApplicationObject
         $this->getRouter();
 
         if ($this->entity->translate != false)
-            Translate\Mui::start($this->entity->translate, $this->request);
+            Translate\Mui::start($this->entity->translate, $this->request, $this->config->default_language);
 
         if (! $this->autorizated())
             return null;

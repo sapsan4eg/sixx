@@ -34,11 +34,11 @@ class Mui
      * @param	array
      * @param	array
      */
-    public static function start(EntityInterface $entity, \Sixx\Net\Request $request)
+    public static function start(EntityInterface $entity, \Sixx\Net\Request $request, $default = null)
     {
         require_once(\Sixx\Load\Loader::slash(__DIR__) . 'translate.php');
         self::$entity = $entity;
-        self::$default = defined('DEFAULT_LANGUAGE') ? DEFAULT_LANGUAGE: self::$default;
+        self::$default = $default ? $default : self::$default;
         self::$lang = self::$default;
         self::$name = 'no name';
         self::setLanguages(self::$entity->listLanguages());
