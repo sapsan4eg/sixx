@@ -13,6 +13,15 @@ namespace Sixx;
  * @license	   http://six-x.org/guide/license.html
  * @link       http://six-x.org
  * @since      Version 1.0.0
+ *
+ *
+ * @property \Sixx\Engine\View $view
+ * @property \Sixx\Engine\Model $model
+ * @property \Sixx\Entity $entity
+ * @property \Sixx\Net\Request $request
+ * @property \Sixx\Router\AbstractLink $router
+ * @property \Sixx\Autorization\AutorizationInterface $autorization
+ * @property \Sixx\Engine\Config $config
  */
 class Model extends Engine\Object
 {

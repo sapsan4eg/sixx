@@ -23,7 +23,7 @@ class Request
     public $server  = [];
     public $headers = [];
     public $request = [];
-    public $method  = [];
+    public $method  = 'GET';
     public $url = '';
     public $uri = [];
     public $serverPath = '';
@@ -60,7 +60,7 @@ class Request
         $this->session = new Session();
         $this->headers = $this->headers();
         $method = $this->method();
-        $this->method = $method;
+        $this->method = $this->method();
 
         if($this->method != 'GET' && $this->method != 'POST')
             $this->$method = $this->post;
@@ -123,10 +123,10 @@ class Request
     protected function method()
     {
         $method = 'GET';
-        if(! empty($this->server['REQUEST_METHOD']))
+        if (! empty($this->server['REQUEST_METHOD']))
             $method = strtoupper($this->server['REQUEST_METHOD']);
 
-        if($method == 'POST' && ! empty($this->headers['X-HTTP-METHOD-OVERRIDE']))
+        if ($method == 'POST' && ! empty($this->headers['X-HTTP-METHOD-OVERRIDE']))
             $method = strtoupper($this->headers['X-HTTP-METHOD-OVERRIDE']);
 
         return $method;

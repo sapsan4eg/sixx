@@ -99,11 +99,11 @@ class App extends Engine\ApplicationObject
 
     protected function autorizated()
     {
-        if (! empty($this->config->autorization) && $this->entity->autorization != false) {
-            if ($this->config->autorization !== true && class_exists($this->config->autorization))
+        if (! empty($this->config->autorization) && $this->entity->autorization != 'false') {
+            if ($this->config->autorization !== 'true' && class_exists($this->config->autorization))
                 $aut = $this->config->autorization;
             else
-                $aut = 'Autorization\\Simply';
+                $aut = '\\Sixx\\Autorization\\Simply';
 
             $this->autorization = new $aut($this->entity->autorization, $this->router, $this->request);
 

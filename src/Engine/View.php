@@ -13,11 +13,17 @@ namespace Sixx\Engine;
  * @license	   http://six-x.org/guide/license.html
  * @link       http://six-x.org
  * @since      Version 1.0.0.0
+ *
+ * @property \Sixx\Engine\Config $config
+ * @property \Sixx\Router\AbstractLink $router
+ * @property \Sixx\Net\Response $response
  */
 final class View
 {
-    private $privateData = [];
-    public $router;
+    protected $privateData = [];
+    protected $router;
+    protected $config;
+    protected $response;
 
     /**
      * Constructor
@@ -44,9 +50,17 @@ final class View
      */
     public function set($data)
     {
-        if(isset($data['router'])) {
+        if (isset($data['router'])) {
             $this->router = $data['router'];
             unset($data['router']);
+        }
+        if (isset($data['config'])) {
+            $this->config = $data['config'];
+            unset($data['config']);
+        }
+        if (isset($data['response'])) {
+            $this->response = $data['response'];
+            unset($data['responses']);
         }
         $this->privateData = $data;
     }
@@ -164,6 +178,7 @@ final class View
     public function RedirectToAction($action = '', $controller = '', $arguments = [])
     {
         $this->response->setHeaders(['status' => 302, 'Location' => $this->router->link($action, $controller, $arguments)]);
+        return null;
     }
 
     /**

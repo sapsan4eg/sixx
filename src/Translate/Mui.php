@@ -13,6 +13,7 @@ namespace Sixx\Translate;
  * @license	   http://six-x.org/guide/license.html
  * @link       http://six-x.org
  * @since      Version 1.0.0.0
+ *
  */
 class Mui
 {
@@ -84,7 +85,7 @@ class Mui
             $request->session->data['language'] = self::$lang;
         }
 
-        if ( ! isset($request->cookie['language'])) {
+        if (! isset($request->cookie['language'])) {
             setcookie('language',self::$lang, time() + 60 * 60 * 24 * 30, '/', $request->server['HTTP_HOST']);
         } elseif ($request->cookie['language'] != self::$lang) {
             setcookie('language', self::$lang, time() + 60 * 60 * 24 * 30, '/', $request->server['HTTP_HOST']);
@@ -102,7 +103,7 @@ class Mui
      */
     public static function get($key)
     {
-        if(! self::$started)
+        if (! self::$started)
             throw new \Exception('Class translate didn\'t started. ');
 
         if (empty(self::$dictionary[$key])) {
@@ -110,6 +111,7 @@ class Mui
             if (self::$dictionary[$key] === $key && self::$lang != self::$default)
                 self::$dictionary[$key] = self::translate($key, self::$default);
         }
+
         return self::$dictionary[$key];
     }
 
@@ -121,7 +123,7 @@ class Mui
      * @param   string
      * @return	string
      */
-    private static function translate($key, $locale)
+    protected static function translate($key, $locale)
     {
         if (($label = self::$entity->translate($key, $locale)))
             return $label;

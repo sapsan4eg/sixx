@@ -45,9 +45,10 @@ abstract class ApplicationObject extends Object
         \Sixx\Load\Loader::setControllerDir($this->config->dir_controllers);
 
         if (! empty($this->config->entity)) {
-            $entity = '\\' . ucfirst($this->config->entity) . 'Entity';
+            $entity = $this->config->entity;
+            #$entity = '\\' . ucfirst($this->config->entity) . 'Entity';
             if (! class_exists($entity))
-                throw new \Sixx\Exceptions\NotfoundException('Cannot find entity');
+                throw new \Sixx\Exceptions\NotfoundException('Cannot find entity ' . $this->config->entity);
         } elseif (class_exists('\Entity\MysqlEntity')) {
             $entity = '\Entity\MysqlEntity';
         }

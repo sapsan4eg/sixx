@@ -17,6 +17,10 @@ namespace Sixx;
  * @property \Sixx\Engine\View $view
  * @property \Sixx\Engine\Model $model
  * @property \Sixx\Entity $entity
+ * @property \Sixx\Net\Request $request
+ * @property \Sixx\Router\AbstractLink $router
+ * @property \Sixx\Autorization\AutorizationInterface $autorization
+ * @property \Sixx\Engine\Config $config
  */
 class Controller extends Engine\Object
 {
