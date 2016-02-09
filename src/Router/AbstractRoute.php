@@ -61,7 +61,7 @@ abstract class AbstractRoute implements RouteInterface
 
         $this->setArguments($get);
 
-        if (! empty($direction) AND strtolower($direction) == self::$REVERSE)
+        if (! empty($direction) && strtolower($direction) == self::$REVERSE)
             $this->direction = self::$REVERSE;
     }
 

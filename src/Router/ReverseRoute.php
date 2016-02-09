@@ -114,7 +114,7 @@ class ReverseRoute extends AbstractRoute
                 $array['action'] = $personal['action'];
 
                 foreach ($this->route['arguments'] as $key => $value) {
-                    if(isset($personal['arguments'][$key]) && $personal['arguments'][$key] != $value)
+                    if (isset($personal['arguments'][$key]) && $personal['arguments'][$key] != $value)
                         $try_again = true;
                 }
             } else {

@@ -22,10 +22,10 @@ class ForwardRoute extends AbstractRoute
      */
     protected function setUp($get = [])
     {
-        if(! empty($get['controller']))
+        if (! empty($get['controller']))
             $this->setController($get['controller']);
 
-        if(! empty($get['action']))
+        if (! empty($get['action']))
             $this->setAction($get['action']);
     }
 }

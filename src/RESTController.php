@@ -13,11 +13,17 @@ namespace Sixx;
  * @license	   http://six-x.org/guide/license.html
  * @link       http://six-x.org
  * @since      Version 1.0.0.0
+ *
+ * @property \Sixx\Engine\View $view
+ * @property \Sixx\Engine\Model $model
+ * @property \Sixx\Entity $entity
+ * @property \Sixx\Net\Request $request
+ * @property \Sixx\Router\AbstractLink $router
+ * @property \Sixx\Engine\Config $config
  */
 class RESTController extends Controller
 {
-    protected $variables       = [];
-    protected $userId          = 0;
+    protected $userId    = 0;
 
     /**
      * Constructor
@@ -25,14 +31,15 @@ class RESTController extends Controller
     protected function afterConstruct()
     {
         $this->view = new Engine\View([
-            'ControllerName' => $this->router->route['controller'],
-            'ActionName'     => $this->router->route['action'],
+            'ControllerName' => $this->router->route()['controller'],
+            'ActionName'     => $this->router->route()['action'],
             'RequestedUrl'   => $this->request->url,
             'router'         => $this->router,
             'response'       => $this->response,
+            'config'         => $this->config,
         ]);
 
-        if (! $this->legitimated($this->permissions($this->router->route['controller'], $this->router->route['action']))) {
+        if (! $this->legitimated($this->permissions($this->router->route()['controller'], $this->router->route()['action']))) {
             $this->response->response();
             exit;
         }
@@ -69,13 +76,11 @@ class RESTController extends Controller
             }
 
             if (! empty($param) && strpos($param, '@') !== false) {
-                $key = substr($param, 0, strpos($param, ' '));
-                $value = substr($param, strpos($param, ' ') + 1);
+                $key = trim(substr($param, 0, strpos($param, ' ')));
+                $value = trim(substr($param, strpos($param, ' ') + 1));
 
-                if (in_array($key, ['@methods', '@autorization', '@autorizationType', '@variables'])
-                    && ! empty(trim($value))
-                )
-                    $array[substr($key, 1)] = trim($value);
+                if (in_array($key, ['@allowedMethods', '@accept', '@contentType', '@autorization', '@autorizationType']) && ! empty($value))
+                    $array[substr($key, 1)] = $value;
             }
         }
 
@@ -90,24 +95,23 @@ class RESTController extends Controller
     protected function legitimated($array = [])
     {
         #if (! empty($array['autorization']) && empty($array['autorizationType']))
-            $array['autorizationType'] = 'basic';
-
-        if (! empty($this->request->headers['PHP_AUTH_USER']) && ! empty($this->request->headers['PHP_AUTH_PW'])
-            && $this->haveUser($this->request->headers['PHP_AUTH_USER'], $this->request->headers['PHP_AUTH_PW'])
+        #    $array['autorizationType'] = 'basic';
+/*
+        if (! empty($array['autorization']) && (empty($this->request->headers['PHP_AUTH_USER']) || empty($this->request->headers['PHP_AUTH_PW'])
+            || ! $this->haveUser($this->request->headers['PHP_AUTH_USER'], $this->request->headers['PHP_AUTH_PW']))
         ) {
-            return $this->allowedMethod();
-        }
-
-        if (empty($this->response->getContent()))
             $this->response->setContent($this->view->JsonResult([
                 'code'    => 401,
                 'error'   => 'You don\'t send authorization values.',
                 'message' => 'You don\'t send authorization values.',
             ]));
 
-        $this->response->setHeaders(['status' => 401]);
+            $this->response->setHeaders(['status' => 401]);
 
-        return false;
+            return false;
+        }*/
+
+        return $this->allowedMethods($array);
     }
 
     /**
@@ -142,46 +146,44 @@ class RESTController extends Controller
      *
      * @return  bool
      */
-    protected function allowedMethod()
+    protected function allowedMethods($array)
     {
-        if (empty($this->actions[$this->action]['methods']))
-            return $this->variables();
+        if (empty($array['allowedMethods']))
+            return true;
 
-        if (false !== array_search($this->request->method, $this->actions[$this->action]['methods'])) {
-            if ((empty($this->request->headers['Accept']) || $this->request->headers['Accept'] != 'application/json')
-                && ($this->request->method == 'POST' || $this->request->method == 'PUT'
-                || $this->request->method == 'PATCH' || $this->request->method == 'DELETE')
-            ) {
-                $this->response->setContent($this->view->JsonResult([
-                    'code' => 415,
-                    'error' => 'Unsupported media type.',
-                    'message' => ' Accept: application/json HTTP header wasn\'t send.',
-                ]));
-                $this->response->setHeaders(['status' => 415]);
-                return false;
-            } elseif((empty($this->request->headers['CONTENT_TYPE']) ||  $this->request->headers['CONTENT_TYPE'] != 'application/json')
-                && ($this->request->method == 'POST' || $this->request->method == 'PUT'
-                    || $this->request->method == 'PATCH' || $this->request->method == 'DELETE')
-            ) {
-                $this->response->setContent($this->view->JsonResult([
-                    'code' => 415,
-                    'error' => 'Unsupported media type.',
-                    'message' => ' Content-Type: application/json HTTP header wasn\'t send.',
-                ]));
-                $this->response->setHeaders(['status' => 415]);
-                return false;
-            }
-
-            return $this->variables();
+        if (! empty($array['accept']) && (empty($this->request->headers['Accept']) || $this->request->headers['Accept'] != $array['accept'])) {
+            $this->response->setContent($this->view->JsonResult([
+                'code' => 415,
+                'error' => 'Unsupported media type.',
+                'message' => ' Accept: ' . $array['accept'] . ' HTTP header wasn\'t send.',
+            ]));
+            $this->response->setHeaders(['status' => 415]);
+            return false;
         }
 
-        $this->response->setContent($this->view->JsonResult([
-            'code' => 405,
-            'error' => 'Method Not Allowed.',
-            'message' => 'Method ' . $this->request->method . ' Not Allowed by this action.',
-        ]));
-        $this->response->setHeaders(['status' => 405]);
-        return false;
+        if (! empty($array['contentType']) && (empty($this->request->headers['CONTENT_TYPE']) || $this->request->headers['CONTENT_TYPE'] != $array['contentType'])) {
+            $this->response->setContent($this->view->JsonResult([
+                'code' => 415,
+                'error' => 'Unsupported media type.',
+                'message' => ' Content-Type: ' . $array['contentType'] . ' HTTP header wasn\'t send.',
+            ]));
+            $this->response->setHeaders(['status' => 415]);
+            return false;
+        }
+
+        if (false == array_search($this->request->method, strtoupper($array['allowedMethods']))) {
+            $this->response->setContent($this->view->JsonResult([
+                'code' => 405,
+                'error' => 'Method Not Allowed.',
+                'message' => 'Method ' . $this->request->method . ' Not Allowed by this action.',
+            ]));
+
+            $this->response->setHeaders(['status' => 405]);
+
+            return false;
+        }
+
+        return $this->variables($array);
     }
 
     /**
@@ -189,9 +191,9 @@ class RESTController extends Controller
      *
      * @return  bool
      */
-    protected function variables()
+    protected function variables($array)
     {
-        if (empty($this->actions[$this->action]['variables']))
+        if (empty($array['variables']))
             return true;
 
         $return = true;

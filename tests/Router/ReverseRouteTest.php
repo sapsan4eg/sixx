@@ -182,7 +182,7 @@ class ReverseRouteTest extends PHPUnit_Framework_TestCase
      */
     public function testReverseRoute($need, $get, $map, $entitys = null)
     {
-        if($map != null) {
+        if ($map != null) {
             $object = new \Sixx\Router\RouteMapExample;
             $object::setRoutes($map);
         } else

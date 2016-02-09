@@ -22,9 +22,6 @@ namespace Sixx;
  */
 class App extends Engine\ApplicationObject
 {
-    /**
-     * Constructor
-     */
     public function afterConstruct()
     {
         $this->request = new Net\Request((defined('HTTP_SERVER') ? HTTP_SERVER : ''));
@@ -38,35 +35,23 @@ class App extends Engine\ApplicationObject
         if (! $this->autorizated())
             return null;
 
-        $controllerName = '\\' . ucfirst(strtolower($this->router->route['controller'])) . 'Controller';
-        $action = $this->router->route['action'];
-        $arguments = [];
+        $controllerName = '\\' . ucfirst(strtolower($this->router->route()['controller'])) . 'Controller';
+        $action = ucfirst(strtolower($this->router->route()['action']));
 
-        if (! class_exists($controllerName)
-            || ! ($controller = new $controllerName($this->storage))
-            || ! method_exists($controller, $action)
-            || array_search($action, get_class_methods($controller)) === false
-        ) {
-            if (class_exists(ucfirst(strtolower($this->router->route['error_controller'])) . 'Controller'))
-                $this->response->setHeaders([
-                    'status' => 302,
-                    'Location' => $this->router->link($this->router->route['default_action'], $this->router->route['error_controller'])
-                ]);
-            else {
-                $this->response->setHeaders(['status' => 404]);
-                $this->response->setContent(file_get_contents(\Sixx\Load\Loader::slash(__DIR__) . 'Html/notfound.html'));
-            }
-            $this->response->response();
+        if (! class_exists($controllerName))
+            return $this->notFound();
 
-            return null;
-        }
+        $reflection = new \ReflectionClass($controllerName);
+
+        if (! $reflection->hasMethod($action) || ! $reflection->getMethod($action)->isPublic())
+            return $this->notFound();
+
+        $controller = $reflection->newInstance($this->storage);
 
         if (! $controller instanceof Controller)
             throw new Exceptions\NotInstanceOfException('Controller ' . $controllerName . ' must be instance of \\Sixx\\Controller');
 
-        $return = call_user_func_array([$controller, $action], $arguments);
-
-        $this->response->setContent($return);
+        $this->response->setContent($reflection->getMethod($action)->invokeArgs($controller, $this->arguments($reflection->getMethod($action))));
         $this->response->response();
 
         return null;
@@ -118,5 +103,41 @@ class App extends Engine\ApplicationObject
         }
 
         return true;
+    }
+
+    /**
+     * @param \ReflectionMethod $action
+     * @return array
+     */
+    protected function arguments(\ReflectionMethod $action)
+    {
+        $possible = array_merge($this->router->route()['arguments'], $this->request->post);
+        $arguments = [];
+
+        foreach ($action->getParameters() as $parameter) {
+            if ($parameter->isOptional() != true && ! isset($possible[$parameter->getName()]))
+                throw new \Sixx\Exceptions\NotHaveArgumentsException('Sorry but method ' . $action->getName() . ' have require parameters that you hasn\'t  transferred.');
+
+            if (isset($possible[$parameter->getName()]))
+                $arguments[] = $possible[$parameter->getName()];
+        }
+
+        return $arguments;
+    }
+
+    protected function notFound()
+    {
+        if (class_exists(ucfirst(strtolower($this->router->route()['error_controller'])) . 'Controller'))
+            $this->response->setHeaders([
+                'status' => 302,
+                'Location' => $this->router->link($this->router->route()['default_action'], $this->router->route()['error_controller'])
+            ]);
+        else {
+            $this->response->setHeaders(['status' => 404]);
+            $this->response->setContent(file_get_contents(\Sixx\Load\Loader::slash(__DIR__) . 'Html/notfound.html'));
+        }
+        $this->response->response();
+
+        return null;
     }
 }
