@@ -17,29 +17,31 @@ namespace Sixx\Router;
 class ReverseRoute extends AbstractRoute
 {
     /**
-     * @param array $get
+     * @param array|null $get
      * @return null
      */
-    protected function setUp($get = [])
+    protected function setUp(array $get = null)
     {
-        $this->direction = self::$REVERSE;
+        $this->direction = self::REVERSE;
 
-        $route = explode('/', StringWorking::clearUri($get['_route_']));
+        $route = explode('/', StringWorking::clearUri($get[$this->routeVar]));
         $num = $this->getNumRoute($route);
         $array = $this->routeValues($this->routes[$num]['url'], $route, $num);
 
-        if(count($route) > $array['count']) {
+        if (count($route) > $array['count']) {
             $this->setController($this->route['error_controller']);
             return;
         }
 
         $this->defaultRoute($this->routes[$array['num']]);
 
-        if(! empty($array['controller']))
+        if (! empty($array['controller'])) {
             $this->setController($array['controller']);
+        }
 
-        if(! empty($array['action']))
+        if (! empty($array['action'])) {
             $this->setAction($array['action']);
+        }
 
         $this->setArguments($array['arguments']);
     }
@@ -53,24 +55,25 @@ class ReverseRoute extends AbstractRoute
      */
     protected function getNumRoute($route)
     {
-        foreach ($this->routes As $key => $value) {
-
+        foreach ($this->routes as $key => $value) {
             $map = StringWorking::map($value['url']);
-
-            if(count($route) != count($map))
+            if (count($route) != count($map)) {
                 continue;
+            }
 
             $thisroute = true;
 
-            foreach($map as $key_m => $value_m) {
-                if(strpos($value_m, '{') !== false)
+            foreach ($map as $key_m => $value_m) {
+                if (strpos($value_m, '{') !== false) {
                     $thisroute = StringWorking::samePatterns($value_m, $route[$key_m]);
-                elseif($route[$key_m] != $value_m)
+                } elseif ($route[$key_m] != $value_m) {
                     $thisroute = false;
+                }
             }
 
-            if($thisroute)
+            if ($thisroute) {
                 return $key;
+            }
         }
 
         return count($this->routes) - 1;
@@ -114,8 +117,9 @@ class ReverseRoute extends AbstractRoute
                 $array['action'] = $personal['action'];
 
                 foreach ($this->route['arguments'] as $key => $value) {
-                    if (isset($personal['arguments'][$key]) && $personal['arguments'][$key] != $value)
+                    if (isset($personal['arguments'][$key]) && $personal['arguments'][$key] != $value) {
                         $try_again = true;
+                    }
                 }
             } else {
                 $try_again = true;

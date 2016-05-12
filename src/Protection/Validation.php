@@ -32,12 +32,12 @@ class Validation
     {
         $this->currentError = '';
 
-        if((! is_string($data) && ! is_numeric($data)) || ! is_string($rules) || strlen($rules) == 0 || strpos($rules,'isset') !== false) {
+        if ((! is_string($data) && ! is_numeric($data)) || ! is_string($rules) || strlen($rules) == 0 || strpos($rules,'isset') !== false) {
             $this->currentError = 'validation_no_data';
             return false;
         }
 
-        if(strlen($data) == 0 && (strpos($data, 'required') !== false)) {
+        if (strlen($data) == 0 && (strpos($data, 'required') !== false)) {
             $this->currentError = 'validation_required';
             return false;
         }
@@ -58,7 +58,7 @@ class Validation
                 if (function_exists($rule)) {
                     $result = $rule($data);
 
-                    if(! is_bool($result)) {
+                    if (! is_bool($result)) {
                         $data = $result;
                         continue;
                     }
@@ -76,12 +76,12 @@ class Validation
 
             $result = $this->$rule($data, $param);
 
-            if(! is_bool($result)) {
+            if (! is_bool($result)) {
                 $data = $result;
                 continue;
             }
 
-            if($result === false) {
+            if ($result === false) {
                 $this->currentError = str_replace('{param}', $param, 'validation_' . $rule);
                 return false;
             }
@@ -412,8 +412,8 @@ class Validation
         $str = str_replace(' ', '', $str);
         $date = explode('/', $str);
 
-        if(count($date) == 2 && $this->isNatural($date[0]) && $this->isNatural($date[1])) {
-            if(strlen($date[1]) == 2) {
+        if (count($date) == 2 && $this->isNatural($date[0]) && $this->isNatural($date[1])) {
+            if (strlen($date[1]) == 2) {
                 $current_cent = date("Y");
                 $current_cent = substr($current_cent, 0, 2);
                 $date[1] = $current_cent . $date[1];
@@ -421,6 +421,7 @@ class Validation
 
             return checkdate($date[0], 1, $date[1]);
         }
+
         return false;
     }
 
@@ -433,18 +434,18 @@ class Validation
      */
     public function datesGreaterNow($str)
     {
-        if($this->monthYear($str)) {
+        if ($this->monthYear($str)) {
             $str = str_replace(' ', '', $str);
             $date = explode('/', $str);
             $year = date("Y");
             $month = date("m");
 
-            if(strlen($date[1]) == 2) {
+            if (strlen($date[1]) == 2) {
                 $current_cent = substr($year, 0, 2);
                 $date[1] = $current_cent . $date[1];
             }
 
-            if(($year == $date[1] && $month <= $date[0]) OR $year < $date[1]) {
+            if (($year == $date[1] && $month <= $date[0]) OR $year < $date[1]) {
                 return true;
             }
         }
@@ -462,12 +463,12 @@ class Validation
     {
         $str = $this->clearSpace($str);
 
-        if($this->isNaturalNoZero($str)) {
+        if ($this->isNaturalNoZero($str)) {
             $cards = $this->cards();
 
-            foreach($cards As $card) {
-                if($this->regexMatch($str, $card['mask'])) {
-                    if((is_array($card['length']) ? in_array(strlen($str), $card['length']) : $card['length'] == strlen($str))
+            foreach ($cards As $card) {
+                if ($this->regexMatch($str, $card['mask'])) {
+                    if ((is_array($card['length']) ? in_array(strlen($str), $card['length']) : $card['length'] == strlen($str))
                         && ($card['luhn'] === false || $this->luhnTest($str))) {
                         return true;
                     }

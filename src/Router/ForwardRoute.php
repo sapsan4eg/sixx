@@ -17,15 +17,19 @@ namespace Sixx\Router;
 class ForwardRoute extends AbstractRoute
 {
     /**
-     * @param array $get
+     * @param array|null $get
      * @return null
      */
-    protected function setUp($get = [])
+    protected function setUp(array $get = null)
     {
-        if (! empty($get['controller']))
-            $this->setController($get['controller']);
+        $this->direction = self::FORWARD;
 
-        if (! empty($get['action']))
+        if (! empty($get['controller'])) {
+            $this->setController($get['controller']);
+        }
+
+        if (! empty($get['action'])) {
             $this->setAction($get['action']);
+        }
     }
 }

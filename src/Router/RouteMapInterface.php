@@ -17,5 +17,30 @@ namespace Sixx\Router;
 
 interface RouteMapInterface
 {
+    /**
+     * Return all routes
+     * @return array
+     */
     public static function routes();
+
+    /**
+     * Set routes
+     * @param array $array
+     * @return null
+     */
+    public static function setRoutes(array $array);
+
+    /**
+     * Set route
+     * @param array $array
+     * @return null
+     */
+    public static function setRoute(array $array);
+
+    /**
+     * Get route by name
+     * @param $name
+     * @return array
+     */
+    public static function getRoute($name);
 }

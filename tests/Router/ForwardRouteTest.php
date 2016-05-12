@@ -75,8 +75,10 @@ class ForwardRouteTest extends PHPUnit_Framework_TestCase
      */
     public function testForwardRoute($need, $get, $map)
     {
+        require_once 'RouteMapExample.php';
+
         if ($map != null) {
-            $object = new \Sixx\Router\RouteMapExample;
+            $object = new RouteMapExample;
             $object::setRoutes($map);
         } else
             $object = $map;

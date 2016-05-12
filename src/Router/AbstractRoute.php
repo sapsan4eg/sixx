@@ -18,58 +18,61 @@ abstract class AbstractRoute implements RouteInterface
 {
     protected $routes    = [[
         'name'             => 'default',
-        'controller'       => 'Home',
-        'action'           => 'Index',
+        'controller'       => 'home',
+        'action'           => 'index',
         'url'              => '{controller}/{action}/',
-        'error_controller' => 'Error'
+        'error_controller' => 'error'
     ]];
+
     protected $route     = [];
     protected $uri       = [];
     protected $direction;
     protected $entity;
     protected $serverPath;
-    public static $REVERSE = 'reverse';
-    public static $FORWARD = 'forward';
+    protected $routeVar = '_route_';
+    const REVERSE = 'reverse';
+    const FORWARD = 'forward';
 
     /**
-     * Route constructor.
+     * AbstractRoute constructor.
      * @param \Sixx\Net\Request $request
-     * @param RouteMapInterface $map
-     * @param EntityInterface $entity
+     * @param RouteMapInterface|null $map
+     * @param EntityInterface|null $entity
+     * @param null|string $routeVar
      */
-    public function __construct(\Sixx\Net\Request $request, RouteMapInterface $map = null, EntityInterface $entity = null, $direction = null)
+    public function __construct(\Sixx\Net\Request $request, RouteMapInterface $map = null, EntityInterface $entity = null, $routeVar = null)
     {
-        $this->direction = self::$FORWARD;
+        if (! empty($routeVar)) {
+            $this->routeVar = $routeVar;
+        }
 
-        if (! empty($map))
+        if (! empty($map)) {
             $this->routes = $map->routes();
+        }
 
         $get = $request->get;
         $this->uri = $request->uri;
         $this->serverPath = $request->serverPath;
 
-        if (! empty($entity))
+        if (! empty($entity)) {
             $this->entity = $entity;
+        }
 
         $this->defaultRoute($this->routes[count($this->routes) - 1]);
-
         $this->setUp($get);
 
         unset($get['controller']);
         unset($get['action']);
-        unset($get['_route_']);
+        unset($get[$this->routeVar]);
 
         $this->setArguments($get);
-
-        if (! empty($direction) && strtolower($direction) == self::$REVERSE)
-            $this->direction = self::$REVERSE;
     }
 
     /**
-     * @param array $get
+     * @param array|null $get
      * @return null
      */
-    abstract protected function setUp($get = []);
+    abstract protected function setUp(array $get = null);
 
     /**
      * @param string $name

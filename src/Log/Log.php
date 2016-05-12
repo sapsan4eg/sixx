@@ -19,17 +19,21 @@ class Log extends AbstractLogger
 {
     public function log($level, $message, array $context = [])
     {
-        if( ! defined('Sixx\Log\LogLevel::' . strtoupper($level)))
+        if (! defined('Sixx\Log\LogLevel::' . strtoupper($level))) {
             return false;
+        }
 
-        if(empty($context['PROGRAM']))
+        if (empty($context['PROGRAM'])) {
             $context['PROGRAM'] = 'unknow';
+        }
 
         $context['MESSAGE'] = $message;
 
         $exception = array_merge(["LEVEL_NAME" => $level], $context, self::getStat());
 
         $this->write(json_encode($exception), $context['PROGRAM']);
+
+        return true;
     }
 
     /**
@@ -41,7 +45,7 @@ class Log extends AbstractLogger
     {
         $time = time();
 
-        if( ! empty($_SERVER['REQUEST_METHOD'])) {
+        if (! empty($_SERVER['REQUEST_METHOD'])) {
             $event["HTTP"] = ["SERVER" => [
                 'HTTP_USER_AGENT'      => ! empty($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
                 'HTTP_REFERER'         => ! empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '',
@@ -75,15 +79,11 @@ class Log extends AbstractLogger
      */
     protected function fileName($path = '', $name = null)
     {
-        if (! empty($this->dir))
-            $dir = \Sixx\Load\Loader::slash($this->dir);
-        else
-            $dir = \Sixx\Load\Loader::slash(\Sixx\Load\Loader::getDir()) . 'logs/';
+        $dir = DIR_BASE . "logs/" . strtolower(str_replace(['vendor/', 'src/'], '', str_replace('\\', '/', $path)));
 
-        $dir .= strtolower(str_replace([\Sixx\Load\Loader::getDir(), 'vendor/', 'src/'], '', str_replace('\\', '/', $path)));
-
-        if (! file_exists($dir) && ! mkdir($dir, 0777, true))
-                return false;
+        if (! file_exists($dir) && ! mkdir($dir, 0777, true)) {
+            return false;
+        }
 
         return $dir . ($name === null ?  date("Y-m-d") : $name) . '.log';
     }
@@ -96,7 +96,7 @@ class Log extends AbstractLogger
     {
         $filename = $this->fileName($path . '/', date("Y-m-d"));
 
-        if($filename !== false) {
+        if ($filename !== false) {
             $handle = fopen($filename, 'a+');
             fwrite($handle, $message . PHP_EOL);
             fclose($handle);

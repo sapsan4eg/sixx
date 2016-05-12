@@ -26,9 +26,10 @@ class ReverseLink extends AbstractLink
      */
     protected function fillUri($uri = '', $controller = '', $action = '', $arguments = [])
     {
-        foreach($this->routes as $values) {
+        foreach ($this->routes as $values) {
             $it = $this->myRoute($values['url'], $arguments, $uri, $controller, $action);
-            if($it['is']) {
+
+            if ($it['is']) {
                 $uri = $it['url'];
                 $arguments = $it['arguments'];
                 break;
@@ -48,48 +49,51 @@ class ReverseLink extends AbstractLink
      */
     protected function myRoute($route, $arguments, $url, $controller, $action)
     {
-        if (! ($it = StringWorking::itSameRoute($route, $arguments)))
+        if (! ($it = StringWorking::itSameRoute($route, $arguments))) {
             return ['url' => $url, 'arguments' => $arguments, 'is' => $it];
+        }
 
         if (strpos($route, '{personal_route}') !== false && ! empty($this->entity)) {
-            if (! ($list = $this->entity->listRoutes()))
+            if (! ($list = $this->entity->listRoutes())) {
                 return ['url' => $url, 'arguments' => $arguments, 'is' => false];
+            }
 
             $argument = ['key' => 0, 'count' => 0];
 
             foreach ($list as $key => $value) {
-                if ($value['controller'] != $controller || $value['action'] != $action)
+                if ($value['controller'] != $controller || $value['action'] != $action) {
                     continue;
+                }
 
                 if (isset($value['arguments'])) {
                     $count = count($value['arguments']);
                     if ($count <= count($arguments)) {
 
                         foreach ($arguments as $keyarg => $valuearg) {
-                            if (isset($value['arguments'][$keyarg]))
+                            if (isset($value['arguments'][$keyarg])) {
                                 $count = $value['arguments'][$keyarg] == $valuearg ? ($count - 1) : $count;
+                            }
                         }
 
-                        if ($count <= 0)
+                        if ($count <= 0) {
                             $argument = $argument['count'] <= count($value['arguments']) ? array('key' => $key, 'count' => count($value['arguments'])) : $argument;
+                        }
                     }
                 } else {
                     $argument = $argument['count'] == 0 ? array('key' => $key, 'count' => 0) : $argument;
                 }
             }
 
-            if (empty($list[$argument['key']]))
+            if (empty($list[$argument['key']])) {
                 return ['url' => $url, 'arguments' => $arguments, 'is' => false];
-
+            }
 
             $temp = $this->fillLink($route, $url, $action, $controller, empty($list[$argument['key']]['arguments']) ? [] : $list[$argument['key']]['arguments'], $arguments, $argument['key']);
             $url = $temp['url'];
             $arguments = $temp['arguments'];
             unset($temp);
 
-
         } elseif (count(StringWorking::map($route)) - 3 <= count($arguments)) {
-
             $temp = $this->fillLink($route, $url, $action, $controller, $arguments, $arguments);
             $url = $temp['url'];
             $arguments = $temp['arguments'];

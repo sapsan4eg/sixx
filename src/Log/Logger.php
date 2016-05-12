@@ -27,12 +27,18 @@ namespace Sixx\Log;
  */
 class Logger
 {
+    /**
+     * @var AbstractLogger
+     */
     protected static $log;
 
     /**
      * Logger constructor.
      */
-    protected function __construct() { }
+    protected function __construct()
+    {
+
+    }
 
     /**
      * @param string $name
@@ -41,25 +47,32 @@ class Logger
      */
     public static function __callStatic($name, $arguments)
     {
-        if(empty(self::$log))
+        if (empty(self::$log)) {
             self::$log = new Log();
+        }
 
-        if(count($arguments) < 1)
+        if (count($arguments) < 1) {
             return false;
+        }
 
-        if(count($arguments) == 3)
-            if($name != 'log' || ! is_string($arguments[0]) || ! is_string($arguments[1]) || ! is_array($arguments[2]))
+        if (count($arguments) == 3) {
+            if ($name != 'log' || !is_string($arguments[0]) || !is_string($arguments[1]) || !is_array($arguments[2])) {
                 return false;
-            else
+            } else {
                 return self::$log->log($arguments[0], $arguments[1], $arguments[2]);
+            }
+        }
 
-        if(count($arguments) == 2)
-            if(is_string($arguments[0]) && is_string($arguments[1]) && $name == 'log')
+        if (count($arguments) == 2) {
+            if (is_string($arguments[0]) && is_string($arguments[1]) && $name == 'log') {
                 return self::$log->log($arguments[0], $arguments[1]);
-            elseif(is_string($arguments[0]) || ! is_array($arguments[1]) && $name != 'log')
+            } elseif (is_string($arguments[0]) || !is_array($arguments[1]) && $name != 'log') {
                 return self::$log->$name($arguments[0], $arguments[1]);
+            }
+        }
 
-        if($name != 'log' && count($arguments) == 1 && is_string($arguments[0]))
+        if ($name != 'log' && count($arguments) == 1 && is_string($arguments[0])) {
             return self::$log->$name($arguments[0]);
+        }
     }
 }

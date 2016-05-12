@@ -22,10 +22,11 @@ class StringWorking
      */
     public static function clearUri($uri = '')
     {
-        if(strlen($uri) == strrpos($uri, '/') + 1)
-            $uri = substr($uri, 0, strlen($uri) -1);
-        else
+        if (strlen($uri) == strrpos($uri, '/') + 1) {
+            $uri = substr($uri, 0, strlen($uri) - 1);
+        } else {
             $uri = str_replace('/index.php', '', $uri);
+        }
 
         return $uri;
     }
@@ -37,9 +38,11 @@ class StringWorking
      * @param string
      * @return string
      */
-    public static function getName($value = '') {
-        if(strpos($value, '{') === false && strpos($value, '}') === false)
+    public static function getName($value = '')
+    {
+        if (strpos($value, '{') === false && strpos($value, '}') === false) {
             return '';
+        }
 
         return substr($value, strpos($value, '{') + 1, strlen($value) - (strlen($value) - strpos($value, '}')) - (strpos($value, '{') + 1));
     }
@@ -67,14 +70,13 @@ class StringWorking
      */
     public static function samePatterns($first, $second)
     {
-        if(strpos($first, '{') !== false && strpos($first, '}') !== false) {
+        if (strpos($first, '{') !== false && strpos($first, '}') !== false) {
             $start = strpos($first, '{');
             $end = strlen($first) - strpos($first, '}') -1;
 
-            if(substr($second, 0, $start) == substr($first, 0, $start) &&
-                (substr($second, strlen($second) - $end) == substr($first, strlen($first) - $end))
-            )
+            if (substr($second, 0, $start) == substr($first, 0, $start) && (substr($second, strlen($second) - $end) == substr($first, strlen($first) - $end))) {
                 return true;
+            }
         }
 
         return false;
@@ -87,11 +89,13 @@ class StringWorking
      */
     public static function map($uri = '')
     {
-        if(strpos($uri, '/') === 0)
+        if (0 === strpos($uri, '/')) {
             $uri = substr($uri, 1);
+        }
 
-        if(strlen($uri) - 1 == strrpos($uri, '/'))
+        if (strlen($uri) - 1 == strrpos($uri, '/')) {
             $uri = substr($uri, 0, strrpos($uri, '/'));
+        }
 
         return explode('/', $uri);
     }
@@ -106,15 +110,12 @@ class StringWorking
 
         $array = explode('&', htmlspecialchars_decode($string));
 
-        foreach($array as $value) {
-            if(strpos($value, '=') < 1 || strpos($value, '=') == strlen($value) - 1)
+        foreach ($array as $value) {
+            if (strpos($value, '=') < 1 || strpos($value, '=') == strlen($value) - 1) {
                 continue;
+            }
 
-            $name = substr($value, 0, strpos($value, '='));
-            $val = substr($value, strpos($value, '=') + 1);
-
-            #if($name != 'controller' & $name != 'action')
-                $arguments[$name] = $val;
+            $arguments[substr($value, 0, strpos($value, '='))] = substr($value, strpos($value, '=') + 1);
         }
 
         return $arguments;
@@ -129,12 +130,13 @@ class StringWorking
     {
         $map = self::map($uri);
 
-        foreach($map as $value) {
-            if(strpos($value, '{') !== false) {
+        foreach ($map as $value) {
+            if (false !== strpos($value, '{')) {
                 $value = self::getName($value);
 
-                if($value != 'controller' && $value != 'action' && $value != 'personal_route' && ! isset($arguments[$value]))
+                if ($value != 'controller' && $value != 'action' && $value != 'personal_route' && ! isset($arguments[$value])) {
                     return false;
+                }
             }
         }
 

@@ -12,7 +12,8 @@
     }
   ],
   "require": {
-    "php": ">=5.5.0"
+    "php": ">=5.5.0",
+    "sixx/dependency-injection": "^0.0.2"
   },
   "autoload": {
     "psr-4": {

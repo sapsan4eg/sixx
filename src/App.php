@@ -2,142 +2,108 @@
 
 namespace Sixx;
 
-/**
- * Sixx\App
- *
- * @package    Sixx
- * @subpackage
- * @category   Library
- * @author     Yuri Nasyrov <sapsan4eg@ya.ru>
- * @copyright  Copyright (c) 2014 - 2016, Yuri Nasyrov.
- * @license	   http://six-x.org/guide/license.html
- * @link       http://six-x.org
- * @since      Version 1.0.0
- *
- * @property \Sixx\Net\Request $request
- * @property \Sixx\Net\Response $response
- * @property \Sixx\Engine\Model $model
- * @property \Sixx\Router\AbstractLink $router
- * @property \Sixx\Autorization\AutorizationInterface $autorization
- */
-class App extends Engine\ApplicationObject
+use Sixx\DependencyInjection\Exceptions\InjectException;
+use Sixx\DependencyInjection\Exceptions\InjectRequiredParameterException;
+use Sixx\DependencyInjection\Inject;
+use Sixx\Log\Logger;
+use Sixx\Net\Response;
+
+class App
 {
-    public function afterConstruct()
+    /**
+     * App constructor.
+     */
+    public function __construct()
     {
-        $this->request = new Net\Request((defined('HTTP_SERVER') ? HTTP_SERVER : ''));
-        $this->response = new Net\Response();
-        $this->model = new Engine\Model($this->storage);
-        $this->getRouter();
+        require_once "startup.php";
+        $view = null;
+        $router = Inject::instantiation("\\Sixx\\Router");
+        $response = Inject::instantiation("\\Sixx\\Net\\Response");
 
-        if ($this->entity->translate != false)
-            Translate\Mui::start($this->entity->translate, $this->request, $this->config->default_language);
+        try {
+            $view = $this->view($router);
+        } catch (InjectRequiredParameterException $e) {
+            Logger::error($e->getMessage(), ["PROGRAM" => "web/" . $router->getController() . "Controller"]);
 
-        if (! $this->autorizated())
-            return null;
-
-        $controllerName = '\\' . ucfirst(strtolower($this->router->route()['controller'])) . 'Controller';
-        $action = ucfirst(strtolower($this->router->route()['action']));
-
-        if (! class_exists($controllerName))
-            return $this->notFound();
-
-        $reflection = new \ReflectionClass($controllerName);
-
-        if (! $reflection->hasMethod($action) || ! $reflection->getMethod($action)->isPublic())
-            return $this->notFound();
-
-        $controller = $reflection->newInstance($this->storage);
-
-        if (! $controller instanceof Controller)
-            throw new Exceptions\NotInstanceOfException('Controller ' . $controllerName . ' must be instance of \\Sixx\\Controller');
-
-        $this->response->setContent($reflection->getMethod($action)->invokeArgs($controller, $this->arguments($reflection->getMethod($action))));
-        $this->response->response();
-
-        return null;
-    }
-
-    protected function getRouter()
-    {
-        $map = null;
-
-        if (! empty($this->config->routemap) && class_exists($this->config->routemap)) {
-            $map = '\\' . $this->config->routemap;
-            $map = new $map();
-        }
-
-        if ($this->entity->router != false)
-            $entity = $this->entity->router;
-        else
-            $entity = null;
-
-        if (! empty($this->request->get['_route_'])) {
-            $router = new Router\ReverseRoute($this->request, $map, $entity);
-        } else
-            $router = new Router\ForwardRoute($this->request, $map, null, $this->config->direction);
-
-        if ($router->direction() == Router\AbstractRoute::$REVERSE)
-            $this->router = new Router\ReverseLink($router, $entity);
-        else
-            $this->router = new Router\ForwardLink($router);
-    }
-
-    protected function autorizated()
-    {
-        if (! empty($this->config->autorization) && $this->entity->autorization != 'false') {
-            if ($this->config->autorization !== 'true' && class_exists($this->config->autorization))
-                $aut = $this->config->autorization;
-            else
-                $aut = '\\Sixx\\Autorization\\Simply';
-
-            $this->autorization = new $aut($this->entity->autorization, $this->router, $this->request);
-
-            if(! $this->autorization instanceof Autorization\AutorizationInterface)
-                throw new Exceptions\NotInstanceOfException('Autorization class must implement \\Sixx\\Autorization\\AutorizationInterface');
-
-            if (! $this->autorization->havesPermission()) {
-                $this->response->setHeaders(['status' => 302, 'Location' => $this->autorization->link()]);
-                $this->response->response();
-                return false;
+            if (! $this->redirectError($response, $router, "Error")) {
+                $this->showError(500, $response);
             }
+
+        } catch (InjectException $e) {
+            if (! $this->redirectError($response, $router, "NotFound")) {
+                $this->showError(404, $response);
+            }
+        } catch (\Exception $e) {
+            Logger::error($e->getMessage(), ["PROGRAM" => "web/" . $router->getController() . "Controller"]);
+
+            $this->showError(500, $response);
         }
 
-        return true;
+        $this->response($response, $view);
     }
 
     /**
-     * @param \ReflectionMethod $action
-     * @return array
+     * @param Router $router
+     * @return View
      */
-    protected function arguments(\ReflectionMethod $action)
+    protected function view(Router $router)
     {
-        $possible = array_merge($this->router->route()['arguments'], $this->request->post);
-        $arguments = [];
-
-        foreach ($action->getParameters() as $parameter) {
-            if ($parameter->isOptional() != true && ! isset($possible[$parameter->getName()]))
-                throw new \Sixx\Exceptions\NotHaveArgumentsException('Sorry but method ' . $action->getName() . ' have require parameters that you hasn\'t  transferred.');
-
-            if (isset($possible[$parameter->getName()]))
-                $arguments[] = $possible[$parameter->getName()];
-        }
-
-        return $arguments;
+        return Inject::method("Controllers\\" . ucfirst($router->getController()) . "Controller",
+            $router->getAction(),
+            array_merge($router->getRequest()->get, $router->getRequest()->post, [
+                "router" => $router,
+                "request" => $router->getRequest()
+            ])
+        );
     }
 
-    protected function notFound()
+    /**
+     * @param Response $response
+     * @param View $view
+     */
+    protected function response(Response $response, View $view = null)
     {
-        if (class_exists(ucfirst(strtolower($this->router->route()['error_controller'])) . 'Controller'))
-            $this->response->setHeaders([
-                'status' => 302,
-                'Location' => $this->router->link($this->router->route()['default_action'], $this->router->route()['error_controller'])
-            ]);
-        else {
-            $this->response->setHeaders(['status' => 404]);
-            $this->response->setContent(file_get_contents(\Sixx\Load\Loader::slash(__DIR__) . 'Html/notfound.html'));
-        }
-        $this->response->response();
+        if ($view != null) {
+            if (!empty($view->getHeaders())) {
+                $response->setHeaders($view->getHeaders());
+            }
 
-        return null;
+            if (!empty($view->getContent())) {
+                $response->setContent($view->getContent());
+            }
+        }
+
+        $response->response();
+    }
+
+    /**
+     * @param $status
+     * @param Response $response
+     * @param null $message
+     */
+    protected function showError($status, Response &$response)
+    {
+        $response->setContent(file_get_contents(__DIR__ . '/Html/' . $status . '.html'));
+        $response->setHeaders(['status' => $status]);
+    }
+
+    /**
+     * @param Response $response
+     * @param Router $router
+     * @param $action
+     * @return bool
+     */
+    protected function redirectError(Response &$response, Router $router, $action)
+    {
+        if (! method_exists("\\Controllers\\" . $router->getErrorController() . "Controller", $action)) {
+            return false;
+        }
+
+        $response->setHeaders([
+            'status' => 302,
+            'Location' => $router->link($action, $router->getErrorController())
+        ]);
+
+        return true;
     }
 }

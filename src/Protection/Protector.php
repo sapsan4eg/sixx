@@ -21,14 +21,14 @@ Class Protector
      *
      * @var	string
      */
-    public static $charset = 'UTF-8';
+    public $charset = 'UTF-8';
 
     /**
      * List of never allowed strings
      *
      * @var	array
      */
-    protected static $neverAllowedStr =	[
+    protected $neverAllowedStr =	[
         'document.cookie'	=> '[removed]',
         'document.write'	=> '[removed]',
         '.parentNode'		=> '[removed]',
@@ -45,7 +45,7 @@ Class Protector
      *
      * @var	array
      */
-    protected static $neverAllowedRegex = [
+    protected $neverAllowedRegex = [
         'javascript\s*:',
         '(document|(document\.)?window)\.(location|on\w*)',
         'expression\s*(\(|&\#40;)', // CSS and IE
@@ -83,31 +83,31 @@ Class Protector
      * @param 	bool		$is_image	Whether the input is an image
      * @return	string
      */
-    public static function xssClean($str, $is_image = false)
+    public function xssClean($str, $is_image = false)
     {
         // Is the string an array?
         if (is_array($str)) {
             foreach ($str as $key => $value) {
-                $str[$key] = self::xssClean($value);
+                $str[$key] = $this->xssClean($value);
             }
 
             return $str;
         }
 
-        $str = self::removeInvisibleCharacters($str);
+        $str = $this->removeInvisibleCharacters($str);
 
         do {
             $str = rawurldecode($str);
         } while (preg_match('/%[0-9a-f]{2,}/i', $str));
 
-        $str = preg_replace_callback("/[^a-z0-9>]+[a-z0-9]+=([\'\"]).*?\\1/si", 'self::convertAttribute', $str);
-        $str = preg_replace_callback('/<\w+.*/si', 'self::decodeEntity', $str);
+        $str = preg_replace_callback("/[^a-z0-9>]+[a-z0-9]+=([\'\"]).*?\\1/si", '$this->convertAttribute', $str);
+        $str = preg_replace_callback('/<\w+.*/si', '$this->decodeEntity', $str);
 
-        $str = self::removeInvisibleCharacters($str);
+        $str = $this->removeInvisibleCharacters($str);
         $str = str_replace("\t", ' ', $str);
 
         $converted_string = $str;
-        $str = self::doNeverAllowed($str);
+        $str = $this->doNeverAllowed($str);
 
         if ($is_image === true) {
             $str = preg_replace('/<\?(php)/i', '&lt;?\\1', $str);
@@ -123,18 +123,18 @@ Class Protector
 
         foreach ($words as $word) {
             $word = implode('\s*', str_split($word)).'\s*';
-            $str = preg_replace_callback('#('.substr($word, 0, -3).')(\W)#is', 'self::compactExplodedWords', $str);
+            $str = preg_replace_callback('#('.substr($word, 0, -3).')(\W)#is', '$this->compactExplodedWords', $str);
         }
 
         do {
             $original = $str;
 
             if (preg_match('/<a/i', $str)) {
-                $str = preg_replace_callback('#<a[^a-z0-9>]+([^>]*?)(?:>|$)#si', 'self::jsLinkRemoval', $str);
+                $str = preg_replace_callback('#<a[^a-z0-9>]+([^>]*?)(?:>|$)#si', '$this->jsLinkRemoval', $str);
             }
 
             if (preg_match('/<img/i', $str)) {
-                $str = preg_replace_callback('#<img[^a-z0-9]+([^>]*?)(?:\s?/?>|$)#si', 'self::jsImgRemoval', $str);
+                $str = preg_replace_callback('#<img[^a-z0-9]+([^>]*?)(?:\s?/?>|$)#si', '$this->jsImgRemoval', $str);
             }
 
             if (preg_match('/script|xss/i', $str)) {
@@ -144,14 +144,14 @@ Class Protector
 
         unset($original);
 
-        $str = self::removeEvilAttributes($str, $is_image);
+        $str = $this->removeEvilAttributes($str, $is_image);
         $naughty = 'alert|prompt|confirm|applet|audio|basefont|base|behavior|bgsound|blink|body|embed|expression|form|frameset|frame|head|html|ilayer|iframe|input|button|select|isindex|layer|link|meta|keygen|object|plaintext|style|script|textarea|title|math|video|svg|xml|xss';
-        $str = preg_replace_callback('#<(/*\s*)('.$naughty.')([^><]*)([><]*)#is', 'self::sanitizeNaughtyHtml', $str);
+        $str = preg_replace_callback('#<(/*\s*)('.$naughty.')([^><]*)([><]*)#is', '$this->sanitizeNaughtyHtml', $str);
         $str = preg_replace('#(alert|prompt|confirm|cmd|passthru|eval|exec|expression|system|fopen|fsockopen|file|file_get_contents|readfile|unlink)(\s*)\((.*?)\)#si',
             '\\1\\2&#40;\\3&#41;',
             $str);
 
-        $str = self::doNeverAllowed($str);
+        $str = $this->doNeverAllowed($str);
 
         if ($is_image === true) {
             return ($str === $converted_string);
@@ -170,7 +170,7 @@ Class Protector
      * @param    bool
      * @return    string
      */
-    public static function removeInvisibleCharacters($str, $url_encoded = TRUE)
+    public function removeInvisibleCharacters($str, $url_encoded = TRUE)
     {
         $non_displayables = [];
 
@@ -195,7 +195,7 @@ Class Protector
      * @param	array	$match
      * @return	string
      */
-    protected static function convertAttribute($match)
+    protected  function convertAttribute($match)
     {
         return str_replace(array('>', '<', '\\'), array('&gt;', '&lt;', '\\\\'), $match[0]);
     }
@@ -203,13 +203,12 @@ Class Protector
     /**
      * HTML Entity Decode Callback
      *
-     * @used-by	CI_Security::xss_clean()
      * @param	array	$match
      * @return	string
      */
-    protected static function decodeEntity($match)
+    protected function decodeEntity($match)
     {
-        return self::entityDecode($match[0], self::$charset);
+        return $this->entityDecode($match[0], $this->charset);
     }
 
     /**
@@ -229,15 +228,15 @@ Class Protector
      * @param	string	$charset	Character set
      * @return	string
      */
-    public static function entityDecode($str, $charset = null)
+    public function entityDecode($str, $charset = null)
     {
         if (strpos($str, '&') === false) {
             return $str;
         }
 
-        static $entities;
+        $entities = null;
 
-        isset($charset) || $charset = self::$charset;
+        isset($charset) || $charset = $this->charset;
         $flag = version_compare(phpversion(), '5.4.0', '=')
             ? ENT_COMPAT | ENT_HTML5
             : ENT_COMPAT;
@@ -291,11 +290,11 @@ Class Protector
      * @param 	string
      * @return 	string
      */
-    protected static function doNeverAllowed($str)
+    protected function doNeverAllowed($str)
     {
-        $str = str_replace(array_keys(self::$neverAllowedStr), self::$neverAllowedStr, $str);
+        $str = str_replace(array_keys($this->neverAllowedStr), $this->neverAllowedStr, $str);
 
-        foreach (self::$neverAllowedRegex as $regex) {
+        foreach ($this->neverAllowedRegex as $regex) {
             $str = preg_replace('#'.$regex.'#is', '[removed]', $str);
         }
 
@@ -312,7 +311,7 @@ Class Protector
      * @param	array	$matches
      * @return	string
      */
-    protected static function compactExplodedWords($matches)
+    protected function compactExplodedWords($matches)
     {
         return preg_replace('/\s+/s', '', $matches[1]).$matches[2];
     }
@@ -329,12 +328,12 @@ Class Protector
      * @param	array	$match
      * @return	string
      */
-    protected static function jsLinkRemoval($match)
+    protected function jsLinkRemoval($match)
     {
         return str_replace($match[1],
             preg_replace('#href=.*?(?:(?:alert|prompt|confirm)(?:\(|&\#40;)|javascript:|livescript:|mocha:|charset=|window\.|document\.|\.cookie|<script|<xss|data\s*:)#si',
                 '',
-                self::filterAttributes(str_replace(array('<', '>'), '', $match[1]))
+                $this->filterAttributes(str_replace(array('<', '>'), '', $match[1]))
             ),
             $match[0]);
     }
@@ -351,12 +350,12 @@ Class Protector
      * @param	array	$match
      * @return	string
      */
-    protected static function jsImgRemoval($match)
+    protected function jsImgRemoval($match)
     {
         return str_replace($match[1],
             preg_replace('#src=.*?(?:(?:alert|prompt|confirm)(?:\(|&\#40;)|javascript:|livescript:|mocha:|charset=|window\.|document\.|\.cookie|<script|<xss|base64\s*,)#si',
                 '',
-                self::filterAttributes(str_replace(array('<', '>'), '', $match[1]))
+                $this->filterAttributes(str_replace(array('<', '>'), '', $match[1]))
             ),
             $match[0]);
     }
@@ -369,13 +368,11 @@ Class Protector
      * @param	string	$str
      * @return	string
      */
-    protected static function filterAttributes($str)
+    protected function filterAttributes($str)
     {
         $out = '';
-        if (preg_match_all('#\s*[a-z\-]+\s*=\s*(\042|\047)([^\\1]*?)\\1#is', $str, $matches))
-        {
-            foreach ($matches[0] as $match)
-            {
+        if (preg_match_all('#\s*[a-z\-]+\s*=\s*(\042|\047)([^\\1]*?)\\1#is', $str, $matches)) {
+            foreach ($matches[0] as $match) {
                 $out .= preg_replace('#/\*.*?\*/#s', '', $match);
             }
         }
@@ -404,7 +401,7 @@ Class Protector
      * @param	bool	$is_image	Whether the input is an image
      * @return	string	The string with the evil attributes removed
      */
-    protected static function removeEvilAttributes($str, $is_image)
+    protected function removeEvilAttributes($str, $is_image)
     {
         $evil_attributes = ['on\w*', 'style', 'xmlns', 'formaction', 'form', 'xlink:href', 'FSCommand', 'seekSegmentTime'];
 
@@ -434,7 +431,7 @@ Class Protector
      * @param	array	$matches
      * @return	string
      */
-    protected static function sanitizeNaughtyHtml($matches)
+    protected function sanitizeNaughtyHtml($matches)
     {
         return '&lt;'.$matches[1].$matches[2].$matches[3]
         .str_replace(array('>', '<'), array('&gt;', '&lt;'), $matches[4]);
@@ -447,7 +444,7 @@ Class Protector
      * @param	string	$string
      * @return	string
      */
-    public static function escape($string)
+    public function escape($string)
     {
         return str_repeat("?", strlen($string));
     }
@@ -458,12 +455,12 @@ Class Protector
      * @param	string	$string
      * @return	string
      */
-    public static function injectionClear($string)
+    public function injectionClear($string)
     {
         $search = strtoupper($string);
         $array = ['SET','INSERT','UPDATE','DELETE','REPLACE','CREATE','DROP','TRUNCATE','LOAD','COPY','ALTER','RENAME','GRANT','REVOKE','LOCK','UNLOCK','REINDEX', '"', ';', '\''];
-        foreach($array as $value) {
-            if(stripos($search , $value) !== false) {
+        foreach ($array as $value) {
+            if (stripos($search , $value) !== false) {
                 $temp = substr($string, 0, stripos($search , $value));
                 $string = $temp . "[CORRUPTED]" . substr($string, stripos($search , $value) + strlen($value));
             }
@@ -477,7 +474,7 @@ Class Protector
      * @param	string	$string
      * @return	string
      */
-    public static function fileUp($string)
+    public function fileUp($string)
     {
         return str_replace('../', '[BADPATH]', $string);
     }
@@ -486,16 +483,16 @@ Class Protector
      * @param string $text
      * @return string
      */
-    public static function clean($text = '')
+    public function clean($text = '')
     {
-        return trim(self::xssClean(self::stripHtml($text)));
+        return trim($this->xssClean($this->stripHtml($text)));
     }
 
     /**
      * @param string $string
      * @return string
      */
-    public static function stripHtml($string)
+    public function stripHtml($string)
     {
         $search = ['@<script[^>]*?>.*?</script>@si',  // Strip out javascript
             '@<[\/\!]*?[^<>]*?>@si',                  // Strip out HTML tags

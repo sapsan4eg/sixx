@@ -14,9 +14,9 @@ namespace Sixx\Router;
  * @link       http://six-x.org
  * @since      Version 1.0.0.0
  */
-abstract class AbstractLink
+abstract class AbstractLink implements LinkInterface
 {
-    public $route;
+    protected $route;
     protected $uri;
     protected $serverPath;
     protected $entity;
@@ -24,11 +24,8 @@ abstract class AbstractLink
     protected $direction;
 
     /**
-     * AbstractLink constructor.
-     * @param array $route
-     * @param array $uri
-     * @param string $serverPath
-     * @param array $routes
+     * @inheritdoc
+     * @param RouteInterface $router
      * @param EntityInterface|null $entity
      */
     public function __construct(RouteInterface $router, EntityInterface $entity = null)
@@ -59,11 +56,13 @@ abstract class AbstractLink
      */
     public function link($action = '', $controller = '', $arguments = [])
     {
-        if(empty($controller))
+        if (empty($controller)) {
             $controller = isset($this->route['controller']) ? $this->route['controller'] : $this->route['default_controller'];
+        }
 
-        if(empty($action))
+        if (empty($action)) {
             $action = $this->route['default_action'];
+        }
 
         $uri = $this->uri['scheme'] . '://' . $this->uri['host'] . (isset($this->uri['port']) ? ':' . $this->uri['port'] : '');
 
@@ -83,7 +82,7 @@ abstract class AbstractLink
 
         $uri = strpos($uri, '?') > 0 ? $uri . '&' : $uri . '?';
 
-        foreach($arguments As $key => $value) {
+        foreach ($arguments as $key => $value) {
             $uri .= $key . '=' . urlencode($value) . '&';
         }
 

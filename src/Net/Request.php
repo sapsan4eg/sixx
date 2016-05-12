@@ -57,13 +57,14 @@ class Request
         $this->cookie  = $_COOKIE;
         $this->files   = $_FILES;
         $this->server  = $_SERVER;
-        $this->session = new Session();
+        $this->session = $_SESSION;
         $this->headers = $this->headers();
         $method = $this->method();
         $this->method = $this->method();
 
-        if($this->method != 'GET' && $this->method != 'POST')
+        if ($this->method != 'GET' && $this->method != 'POST') {
             $this->$method = $this->post;
+        }
 
         $this->url = 'http' . (isset($this->server['HTTPS']) ? 's' : '') . '://' . $this->server['HTTP_HOST'] . str_replace('&amp;', '&', urldecode($this->server['REQUEST_URI']));
         $this->uri = parse_url($this->url);
@@ -78,11 +79,11 @@ class Request
     protected function headers()
     {
         $headers = [];
-        foreach($this->server as $key => $value) {
+        foreach ($this->server as $key => $value) {
             if (substr($key, 0, 5) === 'HTTP_') {
                 $header = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($key, 5)))));
                 $headers[$header] = $value;
-            } elseif(in_array($key, ['CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE'])) {
+            } elseif (in_array($key, ['CONTENT_LENGTH', 'CONTENT_MD5', 'CONTENT_TYPE'])) {
                 $headers[$key] = $value;
             }
         }
@@ -95,22 +96,26 @@ class Request
 
         $authorizationHeader = null;
 
-        if (! empty($this->server['HTTP_AUTHORIZATION']))
+        if (! empty($this->server['HTTP_AUTHORIZATION'])) {
             $authorizationHeader = $this->server['HTTP_AUTHORIZATION'];
-        elseif (! empty($this->server['REDIRECT_HTTP_AUTHORIZATION']))
+        } elseif (! empty($this->server['REDIRECT_HTTP_AUTHORIZATION'])) {
             $authorizationHeader = $this->server['REDIRECT_HTTP_AUTHORIZATION'];
+        }
 
-        if ($authorizationHeader === null)
+        if ($authorizationHeader === null) {
             return $headers;
+        }
 
         if (0 === stripos($authorizationHeader, 'basic ')) {
             $exploded = explode(':', base64_decode(substr($authorizationHeader, 6)), 2);
-            if (count($exploded) == 2)
+            if (count($exploded) == 2) {
                 list($headers['PHP_AUTH_USER'], $headers['PHP_AUTH_PW']) = $exploded;
+            }
         } elseif (empty($this->server['PHP_AUTH_DIGEST']) && (stripos($authorizationHeader, 'digest ')) === 0) {
             $headers['PHP_AUTH_DIGEST'] = $authorizationHeader;
-        } elseif (0 === stripos($authorizationHeader, 'bearer '))
+        } elseif (0 === stripos($authorizationHeader, 'bearer ')) {
             $headers['AUTHORIZATION'] = $authorizationHeader;
+        }
 
         return $headers;
     }
@@ -123,11 +128,14 @@ class Request
     protected function method()
     {
         $method = 'GET';
-        if (! empty($this->server['REQUEST_METHOD']))
-            $method = strtoupper($this->server['REQUEST_METHOD']);
 
-        if ($method == 'POST' && ! empty($this->headers['X-HTTP-METHOD-OVERRIDE']))
+        if (! empty($this->server['REQUEST_METHOD'])) {
+            $method = strtoupper($this->server['REQUEST_METHOD']);
+        }
+
+        if ($method == 'POST' && ! empty($this->headers['X-HTTP-METHOD-OVERRIDE'])) {
             $method = strtoupper($this->headers['X-HTTP-METHOD-OVERRIDE']);
+        }
 
         return $method;
     }
@@ -153,26 +161,35 @@ class Request
         return $data;
     }
 
+    /**
+     * Support iis
+     */
     protected function iisCompatibility()
     {
-        if (! isset($_SERVER['DOCUMENT_ROOT']) && isset($_SERVER['SCRIPT_FILENAME']))
+        if (! isset($_SERVER['DOCUMENT_ROOT']) && isset($_SERVER['SCRIPT_FILENAME'])) {
             $_SERVER['DOCUMENT_ROOT'] = str_replace('\\', '/', substr($_SERVER['SCRIPT_FILENAME'], 0, 0 - strlen($_SERVER['PHP_SELF'])));
+        }
 
-        if (! isset($_SERVER['DOCUMENT_ROOT']) && isset($_SERVER['PATH_TRANSLATED']))
+        if (! isset($_SERVER['DOCUMENT_ROOT']) && isset($_SERVER['PATH_TRANSLATED'])) {
             $_SERVER['DOCUMENT_ROOT'] = str_replace('\\', '/', substr(str_replace('\\\\', '\\', $_SERVER['PATH_TRANSLATED']), 0, 0 - strlen($_SERVER['PHP_SELF'])));
+        }
 
         if (! isset($_SERVER['REQUEST_URI'])) {
             $_SERVER['REQUEST_URI'] = substr($_SERVER['PHP_SELF'], 1);
 
-            if (isset($_SERVER['QUERY_STRING']))
+            if (isset($_SERVER['QUERY_STRING'])) {
                 $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
+            }
         }
     }
 
+    /**
+     * Killing globals variables
+     */
     protected function killGlobals()
     {
         if (ini_get('register_globals')) {
-            $globals = array($_REQUEST, $_SESSION, $_SERVER, $_FILES);
+            $globals = [$_REQUEST, $_SESSION, $_SERVER, $_FILES];
             foreach ($globals as $global) {
                 foreach(array_keys($global) as $key) {
                     unset(${$key});

@@ -2,44 +2,31 @@
 
 namespace Sixx;
 
-/**
- * Sixx\Controller
- *
- * @package    Sixx
- * @subpackage
- * @category   Library
- * @author     Yuri Nasyrov <sapsan4eg@ya.ru>
- * @copyright  Copyright (c) 2014 - 2016, Yuri Nasyrov.
- * @license	   http://six-x.org/guide/license.html
- * @link       http://six-x.org
- * @since      Version 1.0.0.0
- *
- * @property \Sixx\Engine\View $view
- * @property \Sixx\Engine\Model $model
- * @property \Sixx\Entity $entity
- * @property \Sixx\Net\Request $request
- * @property \Sixx\Router\AbstractLink $router
- * @property \Sixx\Autorization\AutorizationInterface $autorization
- * @property \Sixx\Engine\Config $config
- */
-class Controller extends Engine\Object
+use Sixx\Net\Request;
+
+class Controller
 {
-    protected function afterConstruct()
+    /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var View
+     */
+    protected $view;
+
+    /**
+     * @var Router
+     */
+    protected $router;
+
+    public function __construct(Request $request, View $view, Router $router)
     {
-        $data = [
-            'ControllerName' => $this->router->route['controller'],
-            'ActionName' => $this->router->route['action'],
-            'RequestedUrl'=> $this->request->url,
-            'router' => $this->router,
-            'response' => $this->response,
-            'config' => $this->config,
-        ];
-
-        if (isset($this->request->session->data['message'])) {
-            $data['message'] = $this->request->session->data['message'];
-            unset($this->request->session->data['message']);
-        }
-
-        $this->view = new Engine\View($data);
+        $this->request = $request;
+        $this->view = $view;
+        $this->router = $router;
+        $this->view->setAction($this->router->getAction());
+        $this->view->setController($this->router->getController());
     }
 }

@@ -17,102 +17,95 @@ namespace Sixx\Translate;
  */
 class Mui
 {
-    protected static $default = 'en';
-    protected static $lang;
-    protected static $dictionary = [];
-    protected static $name;
-    protected static $listLanguages = [];
-    protected static $entity;
-    protected static $started = false;
+    protected $default = 'en';
+    protected $lang;
+    protected $dictionary = [];
+    protected $name;
+    protected $listLanguages = [];
 
     /**
-     * initiation
-     *
-     * @param	object
-     * @param	array
-     * @param	array
-     * @param	object
-     * @param	array
-     * @param	array
+     * @var EntityInterface
      */
-    public static function start(EntityInterface $entity, \Sixx\Net\Request $request, $default = null)
-    {
-        require_once(\Sixx\Load\Loader::slash(__DIR__) . 'translate.php');
-        self::$entity = $entity;
-        self::$default = $default ? $default : self::$default;
-        self::$lang = self::$default;
-        self::$name = 'no name';
-        self::setLanguages(self::$entity->listLanguages());
+    protected $entity;
 
-        if (count(self::listLanguages()) > 1) {
+    /**
+     * @param EntityInterface $entity
+     * @param \Sixx\Net\Request $request
+     * @param null $default
+     */
+    public function __construct(EntityInterface $entity, \Sixx\Net\Request $request, $default = null)
+    {
+        $this->entity = $entity;
+        $this->default = $default ? $default : $this->default;
+        $this->lang = $this->default;
+        $this->name = 'no name';
+        $this->setLanguages($this->entity->listLanguages());
+
+        if (count($this->listLanguages()) > 1) {
             $array = [
                 isset($request->get['my_mui_language']) ? $request->get['my_mui_language'] : false,
                 isset($request->post['my_mui_language']) ? $request->post['my_mui_language'] : false,
-                isset($request->session->data['language']) ? $request->session->data['language'] : false,
-                isset($cookie['language']) ? $cookie['language'] : false
+                isset($request->session['my_mui_language']) ? $request->session['my_mui_language'] : false,
+                isset($cookie['my_mui_language']) ? $cookie['my_mui_language'] : false
             ];
 
-            $check_browser = true;
+            $checkBrowser = true;
 
             foreach ($array as $value) {
-                if ($value != false && array_key_exists($value, self::listLanguages())) {
-                    self::$name	= self::listLanguages()[$value]['name'];
-                    self::$lang	= $value;
-                    $check_browser	= false;
+                if ($value != false && array_key_exists($value, $this->listLanguages())) {
+                    $this->name	= $this->listLanguages()[$value]['name'];
+                    $this->lang	= $value;
+                    $checkBrowser = false;
                     break;
                 }
             }
 
-            if ($check_browser && ! empty($server['HTTP_ACCEPT_LANGUAGE'])) {
-                $browser_languages = explode(',', $server['HTTP_ACCEPT_LANGUAGE']);
+            if ($checkBrowser && ! empty($request->server['HTTP_ACCEPT_LANGUAGE'])) {
+                $browserLanguages = explode(',', $request->server['HTTP_ACCEPT_LANGUAGE']);
 
-                foreach ($browser_languages As $browser_language) {
-                    foreach (self::listLanguages() As $key => $value) {
+                foreach ($browserLanguages as $browser_language) {
+                    foreach ($this->listLanguages() as $key => $value) {
                         $locale = explode(',', $value['locale']);
-                        if (in_array($browser_language, $locale))
-                            self::$lang = $key;
+                        if (in_array($browser_language, $locale)) {
+                            $this->lang = $key;
+                        }
                     }
                 }
             }
-        } elseif (count(self::listLanguages()) == 1) {
-            self::$name = self::listLanguages()[0]['name'];
-            self::$lang = self::listLanguages()[0]['lang'];
+        } elseif (count($this->listLanguages()) == 1) {
+            $this->name = $this->listLanguages()[0]['name'];
+            $this->lang = $this->listLanguages()[0]['lang'];
         }
 
-        if (! isset($request->session->data['language'])) {
-            $request->session->data['language'] = self::$lang;
-        } elseif ($request->session->data['language'] != self::$lang) {
-            $request->session->data['language'] = self::$lang;
+        if (! isset($request->session['my_mui_language']) || $request->session['my_mui_language'] != $this->lang) {
+            $request->session['my_mui_language'] = $this->lang;
         }
 
-        if (! isset($request->cookie['language'])) {
-            setcookie('language',self::$lang, time() + 60 * 60 * 24 * 30, '/', $request->server['HTTP_HOST']);
-        } elseif ($request->cookie['language'] != self::$lang) {
-            setcookie('language', self::$lang, time() + 60 * 60 * 24 * 30, '/', $request->server['HTTP_HOST']);
+        if (! isset($request->cookie['my_mui_language']) || $request->cookie['my_mui_language'] != $this->lang) {
+            setcookie('language',$this->lang, time() + 60 * 60 * 24 * 30, '/', $request->server['HTTP_HOST']);
         }
 
-        self::$started = true;
+        $this->started = true;
     }
 
     /**
      * get translated string
      *
-     * @access	public
-     * @param	string
-     * @return	string
+     * @access public
+     * @param string
+     * @return string
+     * @throws \Exception
      */
-    public static function get($key)
+    public function get($key)
     {
-        if (! self::$started)
-            throw new \Exception('Class translate didn\'t started. ');
-
-        if (empty(self::$dictionary[$key])) {
-            self::$dictionary[$key] = self::translate($key, self::$lang);
-            if (self::$dictionary[$key] === $key && self::$lang != self::$default)
-                self::$dictionary[$key] = self::translate($key, self::$default);
+        if (empty($this->dictionary[$key])) {
+            $this->dictionary[$key] = $this->translate($key, $this->lang);
+            if ($this->dictionary[$key] === $key && $this->lang != $this->default) {
+                $this->dictionary[$key] = $this->translate($key, $this->default);
+            }
         }
 
-        return self::$dictionary[$key];
+        return $this->dictionary[$key];
     }
 
     /**
@@ -123,12 +116,13 @@ class Mui
      * @param   string
      * @return	string
      */
-    protected static function translate($key, $locale)
+    protected function translate($key, $locale)
     {
-        if (($label = self::$entity->translate($key, $locale)))
+        if (($label = $this->entity->translate($key, $locale))) {
             return $label;
-        else
-            return $key;
+        }
+
+        return $key;
     }
 
     /**
@@ -137,9 +131,9 @@ class Mui
      * @access	public
      * @return	string
      */
-    public static function getLang()
+    public function getLang()
     {
-        return self::$lang;
+        return $this->lang;
     }
 
     /**
@@ -148,9 +142,9 @@ class Mui
      * @access	public
      * @return	string
      */
-    public static function getName()
+    public function getName()
     {
-        return self::$name;
+        return $this->name;
     }
 
     /**
@@ -159,9 +153,9 @@ class Mui
      * @access	public
      * @return	array
      */
-    public static function listLanguages()
+    public function listLanguages()
     {
-        return self::$listLanguages;
+        return $this->listLanguages;
     }
 
     /**
@@ -170,8 +164,8 @@ class Mui
      * @access	public
      * @param	array
      */
-    protected static function setLanguages($lang)
+    protected function setLanguages($lang)
     {
-        self::$listLanguages = $lang;
+        $this->listLanguages = $lang;
     }
 }

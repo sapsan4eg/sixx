@@ -24,16 +24,27 @@ use Sixx\Log;
  * @param	string
  * @return	bool	TRUE if the current version is $version or higher
  */
-if (version_compare(phpversion(), '5.5.0', '<') == true)
+if (version_compare(phpversion(), '5.5.0', '<') == true) {
     exit('PHP5.5+ Required');
+}
 
 /**
  * ------------------------------------------------------
  *  Set default time zone
  * ------------------------------------------------------
  */
-if (! ini_get('date.timezone'))
+if (! ini_get('date.timezone')) {
     date_default_timezone_set('Asia/Yekaterinburg');
+}
+
+/**
+ * ------------------------------------------------------
+ *  Set dir base
+ * ------------------------------------------------------
+ */
+if (! defined("DIR_BASE")) {
+    define("DIR_BASE", dirname(dirname(dirname(dirname(dirname(__FILE__))))) . "/");
+}
 
 /**
  *---------------------------------------------------------------
@@ -83,7 +94,7 @@ function errorHandler($errno, $message, $file, $line)
             break;
     }
 
-    $program = str_replace(\Sixx\Load\Loader::getDir(), '', dirname($file));
+    $program = str_replace(DIR_BASE, '', dirname($file));
 
     Log\Logger::$error($message . ' File: ' . $file . ' Line: ' . $line, ['PROGRAM' => $program]);
     writeError($error, $message . ' File: ' . $file . ' Line: ' . $line);
@@ -144,8 +155,9 @@ function fatalErrorHandler($buffer) {
     return $buffer;
 }
 
-if (! empty($argv))
+if (! empty($argv)) {
     define('ARGV', implode('|', $argv));
+}
 
 /**
  * ------------------------------------------------------
@@ -153,7 +165,24 @@ if (! empty($argv))
  * ------------------------------------------------------
  */
 spl_autoload_register(
-    function($name) {
-        \Sixx\Load\Loader::autoload($name);
+    function ($name) {
+        $name = str_replace('\\', '/', $name);
+
+        if (strpos($name, '/') === 0) {
+            $name = substr($name, 1);
+        }
+
+        if (file_exists(DIR_BASE . $name . '.php')) {
+            require_once(DIR_BASE . $name . '.php');
+        }
     }
 );
+
+function slash($string = '')
+{
+    if (strrpos($string, '/') != strlen($string) -1) {
+        $string .= '/';
+    }
+
+    return $string;
+}

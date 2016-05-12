@@ -1,39 +1,29 @@
 <?php
 
-namespace Sixx\Engine;
+namespace Sixx;
+
+use Sixx\Exceptions\NotFoundFileException;
 
 /**
- * Sixx\Engine\View
+ * Sixx\View
  *
  * @package    Sixx
- * @subpackage Engine
- * @category   Library
+ * @subpackage
+ * @category   Core
  * @author     Yuri Nasyrov <sapsan4eg@ya.ru>
  * @copyright  Copyright (c) 2014 - 2016, Yuri Nasyrov.
  * @license	   http://six-x.org/guide/license.html
  * @link       http://six-x.org
  * @since      Version 1.0.0.0
- *
- * @property \Sixx\Engine\Config $config
- * @property \Sixx\Router\AbstractLink $router
- * @property \Sixx\Net\Response $response
  */
 final class View
 {
     protected $privateData = [];
-    protected $router;
-    protected $config;
-    protected $response;
 
-    /**
-     * Constructor
-     *
-     * @param	array
-     */
-    public function __construct($data = [])
-    {
-        $this->set($data);
-    }
+    protected $content;
+    protected $headers;
+    protected $actionName;
+    protected $controllerName;
 
     /**
      * @access public
@@ -45,28 +35,14 @@ final class View
     }
 
     /**
-     * @access	public
-     * @param	array
+     * @param array
      */
-    public function set($data)
+    public function set(array $data)
     {
-        if (isset($data['router'])) {
-            $this->router = $data['router'];
-            unset($data['router']);
-        }
-        if (isset($data['config'])) {
-            $this->config = $data['config'];
-            unset($data['config']);
-        }
-        if (isset($data['response'])) {
-            $this->response = $data['response'];
-            unset($data['responses']);
-        }
         $this->privateData = $data;
     }
 
     /**
-     * @access public
      * @param string
      * @param mixed
      */
@@ -76,7 +52,6 @@ final class View
     }
 
     /**
-     * @access public
      * @param string
      * @return mixed
      */
@@ -86,11 +61,8 @@ final class View
     }
 
     /**
-     * check has key in array
-     *
-     * @access	public
-     * @param	string
-     * @return	mixed
+     * @param string
+     * @return mixed
      */
     public function has($key)
     {
@@ -98,7 +70,6 @@ final class View
     }
 
     /**
-     * @access public
      * @param string
      * @return mixed
      */
@@ -108,26 +79,25 @@ final class View
     }
 
     /**
-     * @access public
      * @param string $actionName
      * @param string
      * @param string|bool $layout
-     * @throws \Sixx\Exceptions\NotfoundException
-     * @return string
+     * @throws \Sixx\Exceptions\NotFoundFileException
+     * @return $this
      */
     public function ViewResult($actionName = '', $controllerName = '', $layout = true)
     {
         if (empty($actionName))
-            $actionName = $this->privateData['ActionName'];
+            $actionName = $this->actionName;
 
         if (empty($controllerName))
-            $controllerName = $this->privateData['ControllerName'];
+            $controllerName = $this->controllerName;
 
         $expansion = ! empty($this->config->file_view) ? $this->config->file_view : 'tpl';
 
-        $dir = \Sixx\Load\Loader::slash($this->config->dir_base);
+        $dir = slash(DIR_BASE);
 
-        $dir .= \Sixx\Load\Loader::slash(! empty($this->config->dir_views) ? $this->config->dir_views : 'views');
+        $dir .= slash(! empty($this->config->dir_views) ? $this->config->dir_views : 'views');
 
         $file = strtolower($dir . $controllerName . '/' . $actionName . '.' . $expansion);
 
@@ -138,29 +108,29 @@ final class View
             else
                 $layoutFile = ! empty($this->config->file_layout) ? $this->config->file_layout : 'layout';
 
-            $dir .= \Sixx\Load\Loader::slash(! empty($this->config->dir_shared) ? $this->config->dir_shared : 'shared');
+            $dir .= slash(! empty($this->config->dir_shared) ? $this->config->dir_shared : 'shared');
 
             $file = strtolower($dir . $layoutFile . '.' . $expansion);
-            $this->renderBody = $this->ViewResult($actionName, $controllerName, false);
+            $this->ViewResult($actionName, $controllerName, false);
+            $this->renderBody = $this->getContent();
         }
 
         if (file_exists($file)) {
             extract($this->privateData);
             ob_start();
             include($file);
-            $content = ob_get_contents();
+            $this->content = ob_get_contents();
             ob_end_clean();
-            return $content;
+            return $this;
         } else {
-            throw new \Sixx\Exceptions\NotfoundException('Error: Could not find view ' . $file . '!');
+            throw new NotFoundFileException('Error: Could not find view ' . $file . '!');
         }
     }
 
     /**
-     * @access public
      * @param string
      * @param string
-     * @return string
+     * @return $this
      */
     public function PartialViewResult($actionName = '', $controllerName = '')
     {
@@ -168,31 +138,31 @@ final class View
     }
 
     /**
-     * redirect browser to new page
+     * Redirect browser to new page
      *
-     * @access public
-     * @param string
-     * @param string
-     * @param array
+     * @param string $action
+     * @param string $controller
+     * @param array|null $arguments
+     * @return $this
      */
-    public function RedirectToAction($action = '', $controller = '', $arguments = [])
+    public function RedirectToAction($action = '', $controller = '', array $arguments = null)
     {
         $this->response->setHeaders(['status' => 302, 'Location' => $this->router->link($action, $controller, $arguments)]);
-        return null;
+        return $this;
     }
 
     /**
-     * generates error page with status 404
+     * Generates error page with status 404
      *
      * @access public
      * @param string $actionName
      * @param string $controllerName
      * @param string|bool $layout
-     * @return string
+     * @return $this
      */
     public function NotFoundResult($actionName = '', $controllerName = '',  $layout = true)
     {
-        $this->response->setHeaders(['status' => 404]);
+        $this->headers = ['status' => 404];
         return $this->ViewResult($actionName, $controllerName, $layout);
     }
 
@@ -201,7 +171,7 @@ final class View
      * @param string $file
      * @param string $filename
      * @param mixed $type
-     * @throws \Exception
+     * @throws NotFoundFileException
      * @param string
      */
     public function FileResult($file = '', $filename = '', $type = null)
@@ -216,34 +186,33 @@ final class View
                 $this->fileHeaders($filename, filesize($file));
                 ob_clean();
                 flush();
-                readfile($file);
-                exit();
+                $this->content = file_get_contents($file);
             } else {
-                throw new \Exception('Error: Could not find file ' . $file . '!');
+                throw new NotFoundFileException('Error: Could not find file ' . $file . '!');
             }
         } elseif (is_string($file)) {
             $this->fileHeaders($filename . "." . $type, strlen($file));
             ob_clean();
             flush();
             ob_start();
-            echo $file;
+            $this->content = $file;
             ob_end_flush();
             exit();
         } else {
-            throw new \Exception('Error: you give to output buffer something wrong !');
+            throw new NotFoundFileException('Error: you give to output buffer something wrong !');
         }
     }
 
     /**
-     * return file stream to browser
+     * Return file stream to browser
      *
-     * @access	public
-     * @param	string
-     * @param	string
+     * @access public
+     * @param string
+     * @param string
      */
     protected function fileHeaders($name, $size)
     {
-        $this->response->setHeaders(
+        $this->headers =
             [
                 'Content-Description' => 'File Transfer',
                 'Content-Type' => 'application/octet-stream',
@@ -253,24 +222,45 @@ final class View
                 'Cache-Control' => 'must-revalidate',
                 'Pragma' => 'public',
                 'Content-Length' => $size,
-            ]
-        );
+            ];
     }
 
     /**
-     * return json string format
+     * Return json string format
      *
      * @access public
-     * @param array|string $array
-     * @return string
+     * @param array|string|null $array
+     * @return $this
      */
-    public function JsonResult($array = [])
+    public function JsonResult($array = null)
     {
-        $this->response->setHeaders(['Content-Type' => 'application/json']);
+        $this->headers = ['Content-Type' => 'application/json'];
 
         if (is_string($array))
             return $array;
 
-        return json_encode($array);
+        $this->content = json_encode($array);
+
+        return $this;
+    }
+
+    public function getHeaders()
+    {
+        return $this->headers;
+    }
+
+    public function getContent()
+    {
+        return $this->content;
+    }
+
+    public function setController($controller)
+    {
+        $this->controllerName = $controller;
+    }
+
+    public function setAction($action)
+    {
+        $this->actionName = $action;
     }
 }
