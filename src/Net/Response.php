@@ -146,7 +146,7 @@ class Response
      */
     protected function prepare(array $headers = null)
     {
-        $headers['status'] = ! empty($headers['status']) ? (int)$headers['status'] : 200;
+        $headers['status'] = !empty($headers['status']) ? (int)$headers['status'] : 200;
         $headers['status'] = array_key_exists((int)$headers['status'], $this->status) ? (int)$headers['status'] : 200;
 
         if (empty($headers['Date'])) {
@@ -157,7 +157,7 @@ class Response
         if (empty($headers['Content-Type']))
             $headers['Content-Type'] = 'text/html; charset=UTF-8';
 
-        if (! empty($headers['Transfer-Encoding']) && ! empty($headers['Content-Length']))
+        if (!empty($headers['Transfer-Encoding']) && !empty($headers['Content-Length']))
             unset($headers['Content-Length']);
 
         return $headers;
@@ -168,7 +168,7 @@ class Response
      */
     public function setContent($content = '')
     {
-        if (! empty($content))
+        if (!empty($content))
             $this->content = $content;
     }
 

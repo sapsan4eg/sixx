@@ -34,7 +34,7 @@ class Router
             $routeVar = '_route_';
         }
 
-        if (! empty($this->request->get[$routeVar])) {
+        if (!empty($this->request->get[$routeVar])) {
             $name = 'Sixx\Router\ReverseRoute';
             $direction = AbstractRoute::REVERSE;
         } else {

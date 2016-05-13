@@ -134,7 +134,7 @@ class StringWorking
             if (false !== strpos($value, '{')) {
                 $value = self::getName($value);
 
-                if ($value != 'controller' && $value != 'action' && $value != 'personal_route' && ! isset($arguments[$value])) {
+                if ($value != 'controller' && $value != 'action' && $value != 'personal_route' && !isset($arguments[$value])) {
                     return false;
                 }
             }

@@ -26,7 +26,7 @@ class Image
      */
     public function __construct($name = null)
     {
-        ! empty($name) ? $this->take($name) : null;
+        !empty($name) ? $this->take($name) : null;
     }
 
     /**
@@ -37,7 +37,7 @@ class Image
      */
     protected function have($name)
     {
-        if(! empty($name) && file_exists(realpath($name)) &&
+        if (!empty($name) && file_exists(realpath($name)) &&
             count(array_keys($this->types, strtolower((new \SplFileInfo($name))->getExtension()))) > 0) {
             return true;
         } else trigger_error('Image class exepted real image');
@@ -53,13 +53,13 @@ class Image
      */
     public function take($name)
     {
-        if($this->have($name)) {
+        if ($this->have($name)) {
             $type = (new \SplFileInfo($name))->getExtension();
             $keys = array_keys($this->types, $type);
-            if(count($keys) > 0) {
+            if (count($keys) > 0) {
                 $func = 'imagecreatefrom' . str_replace('jpg', 'jpeg', $this->types[$keys[0]]);
 
-                if(function_exists($func)) {
+                if (function_exists($func)) {
                     $this->image = [
                         'path'  => realpath($name),
                         'info'  => getimagesize($name),
@@ -81,10 +81,10 @@ class Image
      */
     public function save($name)
     {
-        if(! empty($name) && ! empty($this->image) && is_resource($this->image['image'])) {
+        if (!empty($name) && !empty($this->image) && is_resource($this->image['image'])) {
             $real = realpath(dirname($name)) . '/' . explode('.', basename($name))[0] . '.' . $this->image['type'];
 
-            if( is_writable($real) || ! file_exists($real) &&
+            if ( is_writable($real) || !file_exists($real) &&
                 is_writable(realpath(dirname($name)))) {
                 $func = 'image' . str_replace('jpg', 'jpeg', $this->image['type']);
                 $func($this->image['image'], $real);

@@ -56,9 +56,9 @@ class Arrays
      */
     public function iconv($from, $to)
     {
-        self::$from  = $from;
-        self::$to    = $to;
-        $this->array   = array_map(['\Sixx\File\Arrays', 'iconvBack'], (array)$this->array);
+        self::$from = $from;
+        self::$to = $to;
+        $this->array = array_map(['\Sixx\File\Arrays', 'iconvBack'], (array)$this->array);
 
         return $this;
     }
@@ -71,7 +71,9 @@ class Arrays
      */
     protected static function iconvBack($string)
     {
-        if(is_array($string)) return array_map(['\Sixx\File\Arrays', 'iconvBack'], $string);
+        if (is_array($string)) {
+            return array_map(['\Sixx\File\Arrays', 'iconvBack'], $string);
+        }
 
         return iconv(self::$from, self::$to, $string);
     }
@@ -98,7 +100,9 @@ class Arrays
      */
     protected static function contain($string)
     {
-        if(is_array($string)) return array_filter($string, ['\Sixx\File\Arrays', 'contain']);
+        if (is_array($string)) {
+            return array_filter($string, ['\Sixx\File\Arrays', 'contain']);
+        }
 
         return strpos($string, Arrays::$search) > -1;
     }
@@ -108,7 +112,7 @@ class Arrays
      *
      * @return	array
      */
-    public function pages($count = NULL)
+    public function pages($count = null)
     {
         $count = empty($count) ? 10 : (int)$count;
         $this->array = array_chunk((array)$this->array, $count);

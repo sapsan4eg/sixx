@@ -245,7 +245,7 @@ Class Protector
             $str_compare = $str;
 
             if (preg_match_all('/&[a-z]{2,}(?![a-z;])/i', $str, $matches)) {
-                if (! isset($entities)) {
+                if (!isset($entities)) {
                     $entities = array_map(
                         'strtolower',
                         version_compare(phpversion(), '5.4.0', '=')

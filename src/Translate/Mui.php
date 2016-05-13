@@ -60,7 +60,7 @@ class Mui
                 }
             }
 
-            if ($checkBrowser && ! empty($request->server['HTTP_ACCEPT_LANGUAGE'])) {
+            if ($checkBrowser && !empty($request->server['HTTP_ACCEPT_LANGUAGE'])) {
                 $browserLanguages = explode(',', $request->server['HTTP_ACCEPT_LANGUAGE']);
 
                 foreach ($browserLanguages as $browser_language) {
@@ -77,11 +77,11 @@ class Mui
             $this->lang = $this->listLanguages()[0]['lang'];
         }
 
-        if (! isset($request->session['my_mui_language']) || $request->session['my_mui_language'] != $this->lang) {
+        if (!isset($request->session['my_mui_language']) || $request->session['my_mui_language'] != $this->lang) {
             $request->session['my_mui_language'] = $this->lang;
         }
 
-        if (! isset($request->cookie['my_mui_language']) || $request->cookie['my_mui_language'] != $this->lang) {
+        if (!isset($request->cookie['my_mui_language']) || $request->cookie['my_mui_language'] != $this->lang) {
             setcookie('language',$this->lang, time() + 60 * 60 * 24 * 30, '/', $request->server['HTTP_HOST']);
         }
 

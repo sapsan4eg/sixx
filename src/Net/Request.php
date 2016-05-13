@@ -33,7 +33,7 @@ class Request
      */
     public function __construct($server = '')
     {
-        if (! session_id()) {
+        if (!session_id()) {
             ini_set('session.use_cookies', 'On');
             ini_set('session.use_trans_sid', 'Off');
             session_set_cookie_params(0, '/');
@@ -96,9 +96,9 @@ class Request
 
         $authorizationHeader = null;
 
-        if (! empty($this->server['HTTP_AUTHORIZATION'])) {
+        if (!empty($this->server['HTTP_AUTHORIZATION'])) {
             $authorizationHeader = $this->server['HTTP_AUTHORIZATION'];
-        } elseif (! empty($this->server['REDIRECT_HTTP_AUTHORIZATION'])) {
+        } elseif (!empty($this->server['REDIRECT_HTTP_AUTHORIZATION'])) {
             $authorizationHeader = $this->server['REDIRECT_HTTP_AUTHORIZATION'];
         }
 
@@ -129,11 +129,11 @@ class Request
     {
         $method = 'GET';
 
-        if (! empty($this->server['REQUEST_METHOD'])) {
+        if (!empty($this->server['REQUEST_METHOD'])) {
             $method = strtoupper($this->server['REQUEST_METHOD']);
         }
 
-        if ($method == 'POST' && ! empty($this->headers['X-HTTP-METHOD-OVERRIDE'])) {
+        if ($method == 'POST' && !empty($this->headers['X-HTTP-METHOD-OVERRIDE'])) {
             $method = strtoupper($this->headers['X-HTTP-METHOD-OVERRIDE']);
         }
 
@@ -166,15 +166,15 @@ class Request
      */
     protected function iisCompatibility()
     {
-        if (! isset($_SERVER['DOCUMENT_ROOT']) && isset($_SERVER['SCRIPT_FILENAME'])) {
+        if (!isset($_SERVER['DOCUMENT_ROOT']) && isset($_SERVER['SCRIPT_FILENAME'])) {
             $_SERVER['DOCUMENT_ROOT'] = str_replace('\\', '/', substr($_SERVER['SCRIPT_FILENAME'], 0, 0 - strlen($_SERVER['PHP_SELF'])));
         }
 
-        if (! isset($_SERVER['DOCUMENT_ROOT']) && isset($_SERVER['PATH_TRANSLATED'])) {
+        if (!isset($_SERVER['DOCUMENT_ROOT']) && isset($_SERVER['PATH_TRANSLATED'])) {
             $_SERVER['DOCUMENT_ROOT'] = str_replace('\\', '/', substr(str_replace('\\\\', '\\', $_SERVER['PATH_TRANSLATED']), 0, 0 - strlen($_SERVER['PHP_SELF'])));
         }
 
-        if (! isset($_SERVER['REQUEST_URI'])) {
+        if (!isset($_SERVER['REQUEST_URI'])) {
             $_SERVER['REQUEST_URI'] = substr($_SERVER['PHP_SELF'], 1);
 
             if (isset($_SERVER['QUERY_STRING'])) {

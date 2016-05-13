@@ -33,7 +33,7 @@ if (version_compare(phpversion(), '5.5.0', '<') == true) {
  *  Set default time zone
  * ------------------------------------------------------
  */
-if (! ini_get('date.timezone')) {
+if (!ini_get('date.timezone')) {
     date_default_timezone_set('Asia/Yekaterinburg');
 }
 
@@ -42,8 +42,8 @@ if (! ini_get('date.timezone')) {
  *  Set dir base
  * ------------------------------------------------------
  */
-if (! defined("DIR_BASE")) {
-    define("DIR_BASE", dirname(dirname(dirname(dirname(dirname(__FILE__))))) . "/");
+if (!defined("DIR_BASE")) {
+    define("DIR_BASE", dirname(dirname(dirname(dirname(dirname(__FILE__))))));
 }
 
 /**
@@ -132,8 +132,9 @@ function exceptionHandler(\Exception $exception)
  */
 function writeError($error, $message)
 {
-    if(defined('ERR_DISPLAY') && ERR_DISPLAY)
+    if (defined('ERR_DISPLAY') && ERR_DISPLAY) {
         echo '<i><b>' . strtoupper($error) . '</b>: ' . $message . '</i><br />';
+    }
 }
 
 /**
@@ -155,7 +156,7 @@ function fatalErrorHandler($buffer) {
     return $buffer;
 }
 
-if (! empty($argv)) {
+if (!empty($argv)) {
     define('ARGV', implode('|', $argv));
 }
 
@@ -172,8 +173,8 @@ spl_autoload_register(
             $name = substr($name, 1);
         }
 
-        if (file_exists(DIR_BASE . $name . '.php')) {
-            require_once(DIR_BASE . $name . '.php');
+        if (file_exists(slash(DIR_BASE) . $name . '.php')) {
+            require_once(slash(DIR_BASE) . $name . '.php');
         }
     }
 );

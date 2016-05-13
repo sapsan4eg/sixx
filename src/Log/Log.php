@@ -19,7 +19,7 @@ class Log extends AbstractLogger
 {
     public function log($level, $message, array $context = [])
     {
-        if (! defined('Sixx\Log\LogLevel::' . strtoupper($level))) {
+        if (!defined('Sixx\Log\LogLevel::' . strtoupper($level))) {
             return false;
         }
 
@@ -45,18 +45,18 @@ class Log extends AbstractLogger
     {
         $time = time();
 
-        if (! empty($_SERVER['REQUEST_METHOD'])) {
+        if (!empty($_SERVER['REQUEST_METHOD'])) {
             $event["HTTP"] = ["SERVER" => [
-                'HTTP_USER_AGENT'      => ! empty($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
-                'HTTP_REFERER'         => ! empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '',
-                'HTTP_ACCEPT_ENCODING' => ! empty($_SERVER['HTTP_ACCEPT_ENCODING']) ? $_SERVER['HTTP_ACCEPT_ENCODING'] : '',
-                'HTTP_ACCEPT_LANGUAGE' => ! empty($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '',
-                'REMOTE_ADDR'          => ! empty($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',
-                'REQUEST_SCHEME'       => ! empty($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : '',
-                'REMOTE_PORT'          => ! empty($_SERVER['REMOTE_PORT']) ? $_SERVER['REMOTE_PORT'] : '',
-                'SERVER_PROTOCOL'      => ! empty($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : '',
-                'REQUEST_METHOD'       => ! empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '',
-                'QUERY_STRING'         => ! empty($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '']
+                'HTTP_USER_AGENT'      => !empty($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+                'HTTP_REFERER'         => !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '',
+                'HTTP_ACCEPT_ENCODING' => !empty($_SERVER['HTTP_ACCEPT_ENCODING']) ? $_SERVER['HTTP_ACCEPT_ENCODING'] : '',
+                'HTTP_ACCEPT_LANGUAGE' => !empty($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '',
+                'REMOTE_ADDR'          => !empty($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',
+                'REQUEST_SCHEME'       => !empty($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : '',
+                'REMOTE_PORT'          => !empty($_SERVER['REMOTE_PORT']) ? $_SERVER['REMOTE_PORT'] : '',
+                'SERVER_PROTOCOL'      => !empty($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : '',
+                'REQUEST_METHOD'       => !empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '',
+                'QUERY_STRING'         => !empty($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '']
                 , ($_SERVER['REQUEST_METHOD'] == "POST" ? "POST" : "GET") =>
                     $_SERVER['REQUEST_METHOD'] == "POST" ? $_POST : $_GET,
                 "COOKIE"               => $_COOKIE,
@@ -66,8 +66,8 @@ class Log extends AbstractLogger
         }
 
         $event["TIME"] = ["EVENTIME" => date("c", $time), "UNIXTIME" => $time];
-        $event["SOURCEIP"] = ! empty($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '127.0.0.1';
-        $event["HOST"] = ! empty($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
+        $event["SOURCEIP"] = !empty($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '127.0.0.1';
+        $event["HOST"] = !empty($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
 
         return $event;
     }
@@ -79,9 +79,9 @@ class Log extends AbstractLogger
      */
     protected function fileName($path = '', $name = null)
     {
-        $dir = DIR_BASE . "logs/" . strtolower(str_replace(['vendor/', 'src/'], '', str_replace('\\', '/', $path)));
+        $dir = slash(DIR_BASE) . "logs/" . strtolower(str_replace(['vendor/', 'src/'], '', str_replace('\\', '/', $path)));
 
-        if (! file_exists($dir) && ! mkdir($dir, 0777, true)) {
+        if (!file_exists($dir) && !mkdir($dir, 0777, true)) {
             return false;
         }
 

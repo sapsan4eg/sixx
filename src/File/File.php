@@ -29,7 +29,7 @@ class File extends Arrays
      */
     public function __construct($path = null)
     {
-        if(! empty($path)) {
+        if (!empty($path)) {
             $this->path($path);
             $this->arrays();
         }
@@ -134,12 +134,12 @@ class File extends Arrays
     public function upload($filename = '', $newname = '')
     {
         $this->error = $this->validate($filename);
-        if($this->error === 0) {
-            $name = ( ! empty($newname) ? $newname : str_replace('.', '', microtime (true)));
+        if ($this->error === 0) {
+            $name = ( !empty($newname) ? $newname : str_replace('.', '', microtime (true)));
             $spl = new \SplFileInfo($name);
             $name = $spl->getBasename('.' . $spl->getExtension()) . '.' . (new \SplFileInfo($_FILES[$filename]['name']))->getExtension();
 
-            if(move_uploaded_file($_FILES[$filename]['tmp_name'], self::$path . $name)) {
+            if (move_uploaded_file($_FILES[$filename]['tmp_name'], self::$path . $name)) {
                 return self::$path . $name;
             } else $this->error = 12;
         }
@@ -155,16 +155,16 @@ class File extends Arrays
      */
     protected function validate($filename = '')
     {
-        if(! $this->uploaded($filename))
+        if (!$this->uploaded($filename))
             return 9;
 
-        if($_FILES[$filename]['error'] > 0)
+        if ($_FILES[$filename]['error'] > 0)
             return $_FILES[$filename]['error'];
 
-        if($_FILES[$filename]['size'] > $this->size || $_FILES[$filename]['size'] == 0)
+        if ($_FILES[$filename]['size'] > $this->size || $_FILES[$filename]['size'] == 0)
             return 10;
 
-        if(! count(array_keys($this->safety, $_FILES[$filename]['type'])) > 0)
+        if (!count(array_keys($this->safety, $_FILES[$filename]['type'])) > 0)
             return 11;
 
         return 0;
@@ -178,7 +178,7 @@ class File extends Arrays
      */
     public function uploaded($filname = '')
     {
-        return ! empty($_FILES[$filname]);
+        return !empty($_FILES[$filname]);
     }
 
     /**
@@ -222,7 +222,7 @@ class File extends Arrays
      */
     public function delete($name = '')
     {
-        if($this->have($name) && is_dir(self::$path . (new \SplFileInfo($name))->getBasename()))
+        if ($this->have($name) && is_dir(self::$path . (new \SplFileInfo($name))->getBasename()))
             return $this->writable($name) ? rmdir(self::$path . (new \SplFileInfo($name))->getBasename()) : false;
 
         return $this->have($name) ?
@@ -239,7 +239,7 @@ class File extends Arrays
      */
     public function rename ($name = '', $newname = '')
     {
-        if ($this->writable($name) && ( ! $this->have($newname) ||  $this->writable($newname)))
+        if ($this->writable($name) && ( !$this->have($newname) ||  $this->writable($newname)))
             return rename(self::$path . (new \SplFileInfo($name))->getBasename(), self::$path . (new \SplFileInfo($newname))->getBasename());
 
         return false;
@@ -254,9 +254,9 @@ class File extends Arrays
      */
     public function copy($name = '', $newname = '')
     {
-        if (! empty($name) && ! empty($newname) && $this->writable($name) && (
+        if (!empty($name) && !empty($newname) && $this->writable($name) && (
                 is_writable(realpath($newname)) ||
-                ! file_exists(realpath($newname)) &&
+                !file_exists(realpath($newname)) &&
                 is_writable(realpath(dirname($newname))))) {
             return copy(self::$path . (new \SplFileInfo($name))->getBasename(), realpath(dirname($newname)) . '/' . basename($newname));
         }
@@ -272,9 +272,9 @@ class File extends Arrays
      */
     public function remove($name = '', $newname = '')
     {
-        if (! empty($name) && ! empty($newname) && $this->writable($name) && (
+        if (!empty($name) && !empty($newname) && $this->writable($name) && (
                 is_writable(realpath($newname)) ||
-                ! file_exists(realpath($newname)) &&
+                !file_exists(realpath($newname)) &&
                 is_writable(realpath(dirname($newname))))) {
             return rename(self::$path . (new \SplFileInfo($name))->getBasename(), realpath(dirname($newname)) . '/' . basename($newname));
         }
@@ -289,7 +289,7 @@ class File extends Arrays
      */
     public function newdir($name = '')
     {
-        if(! empty($name) && ! file_exists(self::$path . explode('.', basename($name))[0]))
+        if (!empty($name) && !file_exists(self::$path . explode('.', basename($name))[0]))
             return mkdir(self::$path . explode('.', basename($name))[0]);
 
         return false;

@@ -2,6 +2,8 @@
 
 namespace Sixx\Log;
 
+use Sixx\DependencyInjection\Inject;
+
 /**
  * Sixx\Log\Logger
  *
@@ -28,7 +30,7 @@ namespace Sixx\Log;
 class Logger
 {
     /**
-     * @var AbstractLogger
+     * @var LoggerInterface
      */
     protected static $log;
 
@@ -48,7 +50,7 @@ class Logger
     public static function __callStatic($name, $arguments)
     {
         if (empty(self::$log)) {
-            self::$log = new Log();
+            self::$log = Inject::instantiation("Sixx\\Log\\LoggerInterface");
         }
 
         if (count($arguments) < 1) {
@@ -74,5 +76,7 @@ class Logger
         if ($name != 'log' && count($arguments) == 1 && is_string($arguments[0])) {
             return self::$log->$name($arguments[0]);
         }
+
+        return null;
     }
 }

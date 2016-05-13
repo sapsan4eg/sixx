@@ -35,11 +35,11 @@ class ReverseRoute extends AbstractRoute
 
         $this->defaultRoute($this->routes[$array['num']]);
 
-        if (! empty($array['controller'])) {
+        if (!empty($array['controller'])) {
             $this->setController($array['controller']);
         }
 
-        if (! empty($array['action'])) {
+        if (!empty($array['action'])) {
             $this->setAction($array['action']);
         }
 
@@ -108,7 +108,7 @@ class ReverseRoute extends AbstractRoute
             }
         }
 
-        if (strpos($url, '{personal_route}') !== false && ! empty($this->entity)) {
+        if (strpos($url, '{personal_route}') !== false && !empty($this->entity)) {
             $try_again = false;
 
             if (($personal = $this->entity->getRoute($array['arguments']['personal_route']))) {

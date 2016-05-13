@@ -24,11 +24,11 @@ class ForwardRoute extends AbstractRoute
     {
         $this->direction = self::FORWARD;
 
-        if (! empty($get['controller'])) {
+        if (!empty($get['controller'])) {
             $this->setController($get['controller']);
         }
 
-        if (! empty($get['action'])) {
+        if (!empty($get['action'])) {
             $this->setAction($get['action']);
         }
     }

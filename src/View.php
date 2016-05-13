@@ -93,22 +93,22 @@ final class View
         if (empty($controllerName))
             $controllerName = $this->controllerName;
 
-        $expansion = ! empty($this->config->file_view) ? $this->config->file_view : 'tpl';
+        $expansion = !empty($this->config->file_view) ? $this->config->file_view : 'tpl';
 
         $dir = slash(DIR_BASE);
 
-        $dir .= slash(! empty($this->config->dir_views) ? $this->config->dir_views : 'views');
+        $dir .= slash(!empty($this->config->dir_views) ? $this->config->dir_views : 'views');
 
         $file = strtolower($dir . $controllerName . '/' . $actionName . '.' . $expansion);
 
         if ($layout != false) {
 
-            if(is_string($layout) && strlen($layout) > 0)
+            if (is_string($layout) && strlen($layout) > 0)
                 $layoutFile = $layout;
             else
-                $layoutFile = ! empty($this->config->file_layout) ? $this->config->file_layout : 'layout';
+                $layoutFile = !empty($this->config->file_layout) ? $this->config->file_layout : 'layout';
 
-            $dir .= slash(! empty($this->config->dir_shared) ? $this->config->dir_shared : 'shared');
+            $dir .= slash(!empty($this->config->dir_shared) ? $this->config->dir_shared : 'shared');
 
             $file = strtolower($dir . $layoutFile . '.' . $expansion);
             $this->ViewResult($actionName, $controllerName, false);

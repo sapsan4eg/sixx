@@ -42,11 +42,11 @@ abstract class AbstractRoute implements RouteInterface
      */
     public function __construct(\Sixx\Net\Request $request, RouteMapInterface $map = null, EntityInterface $entity = null, $routeVar = null)
     {
-        if (! empty($routeVar)) {
+        if (!empty($routeVar)) {
             $this->routeVar = $routeVar;
         }
 
-        if (! empty($map)) {
+        if (!empty($map)) {
             $this->routes = $map->routes();
         }
 
@@ -54,7 +54,7 @@ abstract class AbstractRoute implements RouteInterface
         $this->uri = $request->uri;
         $this->serverPath = $request->serverPath;
 
-        if (! empty($entity)) {
+        if (!empty($entity)) {
             $this->entity = $entity;
         }
 

@@ -32,7 +32,7 @@ class Validation
     {
         $this->currentError = '';
 
-        if ((! is_string($data) && ! is_numeric($data)) || ! is_string($rules) || strlen($rules) == 0 || strpos($rules,'isset') !== false) {
+        if ((!is_string($data) && !is_numeric($data)) || !is_string($rules) || strlen($rules) == 0 || strpos($rules,'isset') !== false) {
             $this->currentError = 'validation_no_data';
             return false;
         }
@@ -54,16 +54,16 @@ class Validation
                 $param	= $match[2];
             }
 
-            if (! method_exists($this, $rule)) {
+            if (!method_exists($this, $rule)) {
                 if (function_exists($rule)) {
                     $result = $rule($data);
 
-                    if (! is_bool($result)) {
+                    if (!is_bool($result)) {
                         $data = $result;
                         continue;
                     }
 
-                    if($result === false) {
+                    if ($result === false) {
                         $this->currentError = 'validation_native' . ' ' . $rule;
                         return false;
                     }
@@ -76,7 +76,7 @@ class Validation
 
             $result = $this->$rule($data, $param);
 
-            if (! is_bool($result)) {
+            if (!is_bool($result)) {
                 $data = $result;
                 continue;
             }
@@ -107,10 +107,10 @@ class Validation
      */
     public function required($str)
     {
-        if (! is_array($str)) {
+        if (!is_array($str)) {
             return (trim($str) == '') ? false : true;
         } else {
-            return (! empty($str));
+            return (!empty($str));
         }
     }
 
@@ -124,7 +124,7 @@ class Validation
      */
     public function regexMatch($str, $regex)
     {
-        if (! preg_match($regex, $str)) {
+        if (!preg_match($regex, $str)) {
             return false;
         }
 
@@ -216,7 +216,7 @@ class Validation
      */
     public function validEmail($str)
     {
-        return (! preg_match("/^([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}$/ix", $str)) ? false : true;
+        return (!preg_match("/^([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,6}$/ix", $str)) ? false : true;
     }
 
     /**
@@ -250,7 +250,7 @@ class Validation
      */
     public function alpha($str)
     {
-        return (! preg_match("/^([a-z])+$/i", $str)) ? false : true;
+        return (!preg_match("/^([a-z])+$/i", $str)) ? false : true;
     }
 
     /**
@@ -262,7 +262,7 @@ class Validation
      */
     public function alphaSpace($str)
     {
-        return  strlen($str) > 0 ? (( ! preg_match("/^([a-z ])+$/i", $str)) ? false : true) : true;
+        return  strlen($str) > 0 ? (( !preg_match("/^([a-z ])+$/i", $str)) ? false : true) : true;
     }
 
     /**
@@ -274,7 +274,7 @@ class Validation
      */
     public function alphaNumeric($str)
     {
-        return (! preg_match("/^([a-z0-9])+$/i", $str)) ? false : true;
+        return (!preg_match("/^([a-z0-9])+$/i", $str)) ? false : true;
     }
 
     /**
@@ -286,7 +286,7 @@ class Validation
      */
     public function alphaDash($str)
     {
-        return (! preg_match("/^([-a-z0-9_-])+$/i", $str)) ? false : true;
+        return (!preg_match("/^([-a-z0-9_-])+$/i", $str)) ? false : true;
     }
 
     /**
@@ -311,7 +311,7 @@ class Validation
      */
     public function isNumeric($str)
     {
-        return (! is_numeric($str)) ? false : true;
+        return (!is_numeric($str)) ? false : true;
     }
 
     /**
@@ -347,7 +347,7 @@ class Validation
      */
     public function greaterThan($str, $min)
     {
-        if (! is_numeric($str)) {
+        if (!is_numeric($str)) {
             return false;
         }
         return $str > $min;
@@ -362,7 +362,7 @@ class Validation
      */
     public function lessThan($str, $max)
     {
-        if (! is_numeric($str)) {
+        if (!is_numeric($str)) {
             return false;
         }
         return $str < $max;
@@ -389,7 +389,7 @@ class Validation
      */
     public function isNaturalNoZero($str)
     {
-        if (! preg_match( '/^[0-9]+$/', $str)) {
+        if (!preg_match( '/^[0-9]+$/', $str)) {
             return false;
         }
 
@@ -543,7 +543,7 @@ class Validation
      * @param	string
      * @return	bool
      */
-    public function notNull($str)
+    public function notnull($str)
     {
         return is_null($str) ? false : true;
     }

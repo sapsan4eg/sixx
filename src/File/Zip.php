@@ -77,21 +77,21 @@ class Zip {
         $data = "";
         $mTime = [];
 
-        if($byteArray == false) {
-            if(is_array($file)) {
+        if ($byteArray == false) {
+            if (is_array($file)) {
                 foreach($file as $f) {
                     $this->addData($f, $path);
                 }
             } else {
                 if (file_exists($file)) {
-                    if(is_dir($file) === FALSE && FALSE !== ($data = file_get_contents($file))) {
+                    if (is_dir($file) === FALSE && FALSE !== ($data = file_get_contents($file))) {
                         $mTime = getdate(filemtime($file));
                         $name = $this->name($file, $path);
                     } else return $this;
                 } else return $this;
             }
 
-        } elseif (is_array($file) && ! empty($file['data']) && ! empty($file['name'])) {
+        } elseif (is_array($file) && !empty($file['data']) && !empty($file['name'])) {
             $name = $this->name($file['name'], $path);
             $mTime = getdate(time());
             $data = $file['data'];

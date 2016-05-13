@@ -49,12 +49,12 @@ class ReverseLink extends AbstractLink
      */
     protected function myRoute($route, $arguments, $url, $controller, $action)
     {
-        if (! ($it = StringWorking::itSameRoute($route, $arguments))) {
+        if (!($it = StringWorking::itSameRoute($route, $arguments))) {
             return ['url' => $url, 'arguments' => $arguments, 'is' => $it];
         }
 
-        if (strpos($route, '{personal_route}') !== false && ! empty($this->entity)) {
-            if (! ($list = $this->entity->listRoutes())) {
+        if (strpos($route, '{personal_route}') !== false && !empty($this->entity)) {
+            if (!($list = $this->entity->listRoutes())) {
                 return ['url' => $url, 'arguments' => $arguments, 'is' => false];
             }
 
