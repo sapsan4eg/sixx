@@ -5,7 +5,6 @@ namespace Sixx;
 use Sixx\Net\Request;
 use Sixx\Router\RouteMapInterface;
 use Sixx\Router\EntityInterface;
-use Sixx\Router\AbstractRoute;
 
 class Router
 {
@@ -24,31 +23,19 @@ class Router
      * @param Request $request
      * @param RouteMapInterface|null $routeMap
      * @param EntityInterface|null $entity
-     * @param null $routeVar
+     * @param string $routeVar
      */
-    public function __construct(Request $request, RouteMapInterface $routeMap = null, EntityInterface $entity = null, $routeVar = null)
+    public function __construct(Request $request, RouteMapInterface $routeMap = null, EntityInterface $entity = null, $routeVar = '_route_')
     {
         $this->request = $request;
 
-        if (empty($routeVar)) {
-            $routeVar = '_route_';
-        }
-
         if (!empty($this->request->get[$routeVar])) {
             $name = 'Sixx\Router\ReverseRoute';
-            $direction = AbstractRoute::REVERSE;
         } else {
             $name = 'Sixx\Router\ForwardRoute';
-            $direction = AbstractRoute::FORWARD;
         }
 
-        $router = new $name($this->request, $routeMap, $entity, $direction, $routeVar);
-
-        if ($direction == AbstractRoute::REVERSE) {
-            $this->router = new Router\ReverseLink($router);
-        } else {
-            $this->router = new Router\ForwardLink($router);
-        }
+        $this->router = (new $name($this->request, $routeMap, $entity, $routeVar))->getLink();
     }
 
     /**
@@ -78,12 +65,22 @@ class Router
         return $this->router->route()["error_controller"];
     }
 
+    public function getDefaultAction()
+    {
+        return $this->router->route()["default_action"];
+    }
+
     /**
      * @return Request
      */
     public function getRequest()
     {
         return $this->request;
+    }
+
+    public function getArguments()
+    {
+        return $this->router->route()["arguments"];
     }
 
     /**
@@ -96,5 +93,32 @@ class Router
     public function link($action = '', $controller = '', $arguments = [])
     {
         return $this->router->link($action, $controller, $arguments);
+    }
+
+    /**
+     * Requested uri
+     * @return array
+     */
+    public function uri()
+    {
+        return $this->router->uri();
+    }
+
+    /**
+     * Requested url
+     * @return string
+     */
+    public function requestUri()
+    {
+        return $this->router->requestUri();
+    }
+
+    /**
+     * Direction of route
+     * @return string
+     */
+    public function getDirection()
+    {
+        return $this->router->direction();
     }
 }

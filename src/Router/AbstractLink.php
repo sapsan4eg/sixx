@@ -22,6 +22,7 @@ abstract class AbstractLink implements LinkInterface
     protected $entity;
     protected $routes;
     protected $direction;
+    protected $requestUri;
 
     /**
      * @inheritdoc
@@ -36,6 +37,7 @@ abstract class AbstractLink implements LinkInterface
         $this->entity = $entity;
         $this->routes = $router->listRoutes();
         $this->direction = $router->direction();
+        $this->requestUri = $router->requestUrl();
     }
 
     /**
@@ -44,6 +46,22 @@ abstract class AbstractLink implements LinkInterface
     public function route()
     {
         return $this->route;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function uri()
+    {
+        return $this->uri;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function requestUri()
+    {
+        return $this->requestUri;
     }
 
     /**

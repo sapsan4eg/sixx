@@ -31,5 +31,7 @@ class ForwardRoute extends AbstractRoute
         if (!empty($get['action'])) {
             $this->setAction($get['action']);
         }
+
+        $this->link = new ForwardLink($this, $this->entity);
     }
 }

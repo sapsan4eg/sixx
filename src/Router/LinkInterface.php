@@ -40,4 +40,16 @@ interface LinkInterface
      * @return mixed
      */
     public function direction();
+
+    /**
+     * Return requested uri
+     * @return array
+     */
+    public function uri();
+
+    /**
+     * Return url requested
+     * @return string
+     */
+    public function requestUri();
 }

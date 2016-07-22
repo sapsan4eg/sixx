@@ -100,8 +100,8 @@ Class Protector
             $str = rawurldecode($str);
         } while (preg_match('/%[0-9a-f]{2,}/i', $str));
 
-        $str = preg_replace_callback("/[^a-z0-9>]+[a-z0-9]+=([\'\"]).*?\\1/si", '$this->convertAttribute', $str);
-        $str = preg_replace_callback('/<\w+.*/si', '$this->decodeEntity', $str);
+        $str = preg_replace_callback("/[^a-z0-9>]+[a-z0-9]+=([\'\"]).*?\\1/si", [$this, 'convertAttribute'], $str);
+        $str = preg_replace_callback('/<\w+.*/si',[$this, 'decodeEntity'], $str);
 
         $str = $this->removeInvisibleCharacters($str);
         $str = str_replace("\t", ' ', $str);
@@ -123,18 +123,18 @@ Class Protector
 
         foreach ($words as $word) {
             $word = implode('\s*', str_split($word)).'\s*';
-            $str = preg_replace_callback('#('.substr($word, 0, -3).')(\W)#is', '$this->compactExplodedWords', $str);
+            $str = preg_replace_callback('#('.substr($word, 0, -3).')(\W)#is', [$this, 'compactExplodedWords'], $str);
         }
 
         do {
             $original = $str;
 
             if (preg_match('/<a/i', $str)) {
-                $str = preg_replace_callback('#<a[^a-z0-9>]+([^>]*?)(?:>|$)#si', '$this->jsLinkRemoval', $str);
+                $str = preg_replace_callback('#<a[^a-z0-9>]+([^>]*?)(?:>|$)#si', [$this, 'jsLinkRemoval'], $str);
             }
 
             if (preg_match('/<img/i', $str)) {
-                $str = preg_replace_callback('#<img[^a-z0-9]+([^>]*?)(?:\s?/?>|$)#si', '$this->jsImgRemoval', $str);
+                $str = preg_replace_callback('#<img[^a-z0-9]+([^>]*?)(?:\s?/?>|$)#si', [$this, 'jsImgRemoval'], $str);
             }
 
             if (preg_match('/script|xss/i', $str)) {
@@ -146,7 +146,7 @@ Class Protector
 
         $str = $this->removeEvilAttributes($str, $is_image);
         $naughty = 'alert|prompt|confirm|applet|audio|basefont|base|behavior|bgsound|blink|body|embed|expression|form|frameset|frame|head|html|ilayer|iframe|input|button|select|isindex|layer|link|meta|keygen|object|plaintext|style|script|textarea|title|math|video|svg|xml|xss';
-        $str = preg_replace_callback('#<(/*\s*)('.$naughty.')([^><]*)([><]*)#is', '$this->sanitizeNaughtyHtml', $str);
+        $str = preg_replace_callback('#<(/*\s*)('.$naughty.')([^><]*)([><]*)#is', [$this, 'sanitizeNaughtyHtml'], $str);
         $str = preg_replace('#(alert|prompt|confirm|cmd|passthru|eval|exec|expression|system|fopen|fsockopen|file|file_get_contents|readfile|unlink)(\s*)\((.*?)\)#si',
             '\\1\\2&#40;\\3&#41;',
             $str);

@@ -3,6 +3,7 @@
 namespace Sixx;
 
 use Sixx\Net\Request;
+use Sixx\Authorization\AuthorizationInterface;
 
 class Controller
 {
@@ -21,11 +22,17 @@ class Controller
      */
     protected $router;
 
-    public function __construct(Request $request, View $view, Router $router)
+    /**
+     * @var AuthorizationInterface
+     */
+    protected $authorization;
+
+    public function __construct(Request $request, View $view, Router $router, AuthorizationInterface $authorization = null)
     {
         $this->request = $request;
         $this->view = $view;
         $this->router = $router;
+        $this->authorization = $authorization;
         $this->view->setAction($this->router->getAction());
         $this->view->setController($this->router->getController());
     }

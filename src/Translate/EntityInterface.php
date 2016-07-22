@@ -26,4 +26,11 @@ interface EntityInterface
      * @return bool
      */
     public function setLabel(array $label);
+
+    /**
+     *
+     * @param string $label
+     * @return null
+     */
+    public function deleteLabel($label);
 }

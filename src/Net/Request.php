@@ -57,7 +57,7 @@ class Request
         $this->cookie  = $_COOKIE;
         $this->files   = $_FILES;
         $this->server  = $_SERVER;
-        $this->session = $_SESSION;
+        $this->session = &$_SESSION;
         $this->headers = $this->headers();
         $method = $this->method();
         $this->method = $this->method();

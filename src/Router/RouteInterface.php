@@ -41,4 +41,9 @@ interface RouteInterface
      * @return string
      */
     public function serverPath();
+
+    /**
+     * @return string
+     */
+    public function requestUrl();
 }

@@ -2,17 +2,23 @@
 
 namespace Sixx;
 
-use Sixx\DependencyInjection\Inject;
-
 class App
 {
     /**
      * App constructor.
+     * @param string|null $pathToConfig
      */
-    public function __construct()
+    public function __construct($pathToConfig = null)
     {
-        require_once "startup.php";
-        Inject::bind('Sixx\\Log\\LoggerInterface', ['default' => ['name' => 'Sixx\\Log\\Log', 'single' => true]]);
-        Inject::instantiation("\\Sixx\\Web");
+        try {
+             new Application("\\Sixx\\Web", $pathToConfig);
+        } catch (\Exception $e) {
+            if (headers_sent()) {
+                return null;
+            }
+            header('HTTP/1.1 500 Internal Server Error', true, 500);
+            echo 'Bad deeds, really something going wrong.';
+            echo $e->getMessage();
+        }
     }
 }

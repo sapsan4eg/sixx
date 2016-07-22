@@ -44,6 +44,8 @@ class ReverseRoute extends AbstractRoute
         }
 
         $this->setArguments($array['arguments']);
+
+        $this->link = new ReverseLink($this, $this->entity);
     }
 
     /**

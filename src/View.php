@@ -3,6 +3,7 @@
 namespace Sixx;
 
 use Sixx\Exceptions\NotFoundFileException;
+use Sixx\Router;
 
 /**
  * Sixx\View
@@ -19,11 +20,19 @@ use Sixx\Exceptions\NotFoundFileException;
 final class View
 {
     protected $privateData = [];
-
     protected $content;
-    protected $headers;
+    protected $headers = [];
     protected $actionName;
     protected $controllerName;
+    /**
+     * @var Router
+     */
+    protected $router;
+
+    public function __construct(Router $router)
+    {
+        $this->router = $router;
+    }
 
     /**
      * @access public
@@ -82,16 +91,17 @@ final class View
      * @param string $actionName
      * @param string
      * @param string|bool $layout
-     * @throws \Sixx\Exceptions\NotFoundFileException
-     * @return $this
+     * @return View
      */
-    public function ViewResult($actionName = '', $controllerName = '', $layout = true)
+    public function viewResult($actionName = '', $controllerName = '', $layout = true)
     {
-        if (empty($actionName))
+        if (empty($actionName)) {
             $actionName = $this->actionName;
+        }
 
-        if (empty($controllerName))
+        if (empty($controllerName)) {
             $controllerName = $this->controllerName;
+        }
 
         $expansion = !empty($this->config->file_view) ? $this->config->file_view : 'tpl';
 
@@ -103,38 +113,49 @@ final class View
 
         if ($layout != false) {
 
-            if (is_string($layout) && strlen($layout) > 0)
+            if (is_string($layout) && strlen($layout) > 0) {
                 $layoutFile = $layout;
-            else
+            } else {
                 $layoutFile = !empty($this->config->file_layout) ? $this->config->file_layout : 'layout';
+            }
 
             $dir .= slash(!empty($this->config->dir_shared) ? $this->config->dir_shared : 'shared');
 
             $file = strtolower($dir . $layoutFile . '.' . $expansion);
-            $this->ViewResult($actionName, $controllerName, false);
+            $this->viewResult($actionName, $controllerName, false);
             $this->renderBody = $this->getContent();
         }
 
-        if (file_exists($file)) {
+        return $this->contentResult($file);
+    }
+
+    /**
+     * @param string $fileName
+     * @return View
+     * @throws \Sixx\Exceptions\NotFoundFileException
+     */
+    public function contentResult($fileName)
+    {
+        if (file_exists($fileName)) {
             extract($this->privateData);
             ob_start();
-            include($file);
+            include($fileName);
             $this->content = ob_get_contents();
             ob_end_clean();
             return $this;
         } else {
-            throw new NotFoundFileException('Error: Could not find view ' . $file . '!');
+            throw new NotFoundFileException('Error: could not find content file ' . $fileName . '!');
         }
     }
 
     /**
      * @param string
      * @param string
-     * @return $this
+     * @return View
      */
-    public function PartialViewResult($actionName = '', $controllerName = '')
+    public function partialViewResult($actionName = '', $controllerName = '')
     {
-        return $this->ViewResult($actionName, $controllerName, false);
+        return $this->viewResult($actionName, $controllerName, false);
     }
 
     /**
@@ -143,11 +164,11 @@ final class View
      * @param string $action
      * @param string $controller
      * @param array|null $arguments
-     * @return $this
+     * @return View
      */
-    public function RedirectToAction($action = '', $controller = '', array $arguments = null)
+    public function redirectToAction($action = '', $controller = '', array $arguments = null)
     {
-        $this->response->setHeaders(['status' => 302, 'Location' => $this->router->link($action, $controller, $arguments)]);
+        $this->headers = array_merge($this->headers, ['status' => 302, 'Location' => $this->router->link($action, $controller, $arguments)]);
         return $this;
     }
 
@@ -158,11 +179,11 @@ final class View
      * @param string $actionName
      * @param string $controllerName
      * @param string|bool $layout
-     * @return $this
+     * @return View
      */
-    public function NotFoundResult($actionName = '', $controllerName = '',  $layout = true)
+    public function notFoundResult($actionName = '', $controllerName = '',  $layout = true)
     {
-        $this->headers = ['status' => 404];
+        $this->setStatus(404);
         return $this->ViewResult($actionName, $controllerName, $layout);
     }
 
@@ -174,14 +195,15 @@ final class View
      * @throws NotFoundFileException
      * @param string
      */
-    public function FileResult($file = '', $filename = '', $type = null)
+    public function fileResult($file = '', $filename = '', $type = null)
     {
         if (empty($type)) {
             if ( file_exists($file)) {
-                if (strlen($filename) == 0)
+                if (strlen($filename) == 0) {
                     $filename = basename($file);
-                else
+                } else {
                     $filename .= '.' . substr(strrchr($file, '.'), 1);
+                }
 
                 $this->fileHeaders($filename, filesize($file));
                 ob_clean();
@@ -230,16 +252,17 @@ final class View
      *
      * @access public
      * @param array|string|null $array
-     * @return $this
+     * @return View
      */
-    public function JsonResult($array = null)
+    public function jsonResult($array = null)
     {
-        $this->headers = ['Content-Type' => 'application/json'];
+        $this->headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
 
-        if (is_string($array))
-            return $array;
-
-        $this->content = json_encode($array);
+        if (is_string($array)) {
+            $this->content = $array;
+        } elseif (is_array($array)) {
+            $this->content = json_encode($array, JSON_FORCE_OBJECT);
+        }
 
         return $this;
     }
@@ -262,5 +285,13 @@ final class View
     public function setAction($action)
     {
         $this->actionName = $action;
+    }
+
+    /**
+     * @param int $code
+     */
+    public function setStatus($code)
+    {
+        $this->headers = array_merge($this->headers, ['status' => $code]);
     }
 }

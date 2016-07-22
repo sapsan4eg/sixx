@@ -102,16 +102,7 @@ class Response
 
     protected $content = '';
 
-    protected $protocol;
-
-    /**
-     * Response constructor.
-     * @param string $protocol
-     */
-    public function __construct($protocol = 'HTTP/1.1')
-    {
-        $this->protocol = $protocol;
-    }
+    protected $protocol = 'HTTP/1.1';
 
     /**
      * Response to request
@@ -127,15 +118,17 @@ class Response
      */
     protected function headers()
     {
-        if (headers_sent())
+        if (headers_sent()) {
             return;
+        }
 
         $headers = $this->prepare($this->headers);
         header($this->protocol . ' ' . $headers['status'] . ' ' . $this->status[$headers['status']], true, $headers['status']);
 
         foreach ($headers as $name => $value) {
-            if ($name == 'status')
+            if ($name == 'status') {
                 continue;
+            }
             header($name.': '.$value, false, $headers['status']);
         }
     }
@@ -146,19 +139,24 @@ class Response
      */
     protected function prepare(array $headers = null)
     {
-        $headers['status'] = !empty($headers['status']) ? (int)$headers['status'] : 200;
-        $headers['status'] = array_key_exists((int)$headers['status'], $this->status) ? (int)$headers['status'] : 200;
+        if (empty($headers['status'])) {
+            $headers['status'] = 200;
+        }
+
+        $headers['status'] = $this->getStatus($headers['status'])['code'];
 
         if (empty($headers['Date'])) {
             $date = new \DateTime('now', new \DateTimeZone('UTC'));
             $headers['Date'] = $date->format('D, d M Y H:i:s').' GMT';
         }
 
-        if (empty($headers['Content-Type']))
+        if (empty($headers['Content-Type'])) {
             $headers['Content-Type'] = 'text/html; charset=UTF-8';
+        }
 
-        if (!empty($headers['Transfer-Encoding']) && !empty($headers['Content-Length']))
+        if (!empty($headers['Transfer-Encoding']) && !empty($headers['Content-Length'])) {
             unset($headers['Content-Length']);
+        }
 
         return $headers;
     }
@@ -168,8 +166,9 @@ class Response
      */
     public function setContent($content = '')
     {
-        if (!empty($content))
+        if (!empty($content)) {
             $this->content = $content;
+        }
     }
 
     /**
@@ -190,5 +189,33 @@ class Response
                 $this->headers[$name] = $value;
             }
         }
+    }
+
+    /**
+     * @param int|null $code
+     * @return int
+     */
+    public function getStatus($code = null)
+    {
+        $status = !empty($code) ? (int)$code : 200;
+        $status = array_key_exists($status, $this->status) ? $status : 200;
+
+        return ['code' => $status, 'description' => $this->status[$status]];
+    }
+
+    /**
+     * @param $protocol
+     */
+    public function setProtocol($protocol)
+    {
+        $this->protocol = $protocol;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProtocol()
+    {
+        return $this->protocol;
     }
 }

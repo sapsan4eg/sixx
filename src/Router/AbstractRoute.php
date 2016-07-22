@@ -26,12 +26,18 @@ abstract class AbstractRoute implements RouteInterface
 
     protected $route     = [];
     protected $uri       = [];
+    protected $url;
     protected $direction;
     protected $entity;
     protected $serverPath;
     protected $routeVar = '_route_';
     const REVERSE = 'reverse';
     const FORWARD = 'forward';
+
+    /**
+     * @var LinkInterface
+     */
+    protected $link;
 
     /**
      * AbstractRoute constructor.
@@ -52,6 +58,7 @@ abstract class AbstractRoute implements RouteInterface
 
         $get = $request->get;
         $this->uri = $request->uri;
+        $this->url = $request->url;
         $this->serverPath = $request->serverPath;
 
         if (!empty($entity)) {
@@ -93,7 +100,7 @@ abstract class AbstractRoute implements RouteInterface
     /**
      * @param array $arguments
      */
-    public function setArguments($arguments = [])
+    protected function setArguments($arguments = [])
     {
         $this->route['arguments'] = array_merge($this->route['arguments'], $arguments);
     }
@@ -144,5 +151,15 @@ abstract class AbstractRoute implements RouteInterface
     public function serverPath()
     {
         return $this->serverPath;
+    }
+
+    public function requestUrl()
+    {
+        return $this->url;
+    }
+
+    public function getLink()
+    {
+        return $this->link;
     }
 }

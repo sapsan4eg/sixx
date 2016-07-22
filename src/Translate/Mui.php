@@ -2,6 +2,8 @@
 
 namespace Sixx\Translate;
 
+use Sixx\Net\Request;
+
 /**
  * Sixx\Translate\Mui
  *
@@ -33,7 +35,7 @@ class Mui
      * @param \Sixx\Net\Request $request
      * @param null $default
      */
-    public function __construct(EntityInterface $entity, \Sixx\Net\Request $request, $default = null)
+    public function __construct(EntityInterface $entity, Request $request, $default = null)
     {
         $this->entity = $entity;
         $this->default = $default ? $default : $this->default;
@@ -84,8 +86,6 @@ class Mui
         if (!isset($request->cookie['my_mui_language']) || $request->cookie['my_mui_language'] != $this->lang) {
             setcookie('language',$this->lang, time() + 60 * 60 * 24 * 30, '/', $request->server['HTTP_HOST']);
         }
-
-        $this->started = true;
     }
 
     /**
